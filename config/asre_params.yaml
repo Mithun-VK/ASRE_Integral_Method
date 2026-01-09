@@ -1,0 +1,28 @@
+# ASRE Configuration Parameters
+
+momentum:
+  kappa: 0.03           # Exponential decay rate
+  beta_m: 0.2           # Mean-reversion adjustment weight
+  window_60d: 60        # 60-day lookback window
+
+technical:
+  gamma: 0.1            # Acceleration weight
+  theta: 0.1            # Mean-reversion speed
+  window_200d: 200      # 200-day MA for mean reversion
+  window_20d: 20        # 20-day volatility window
+  window_rsi: 14        # RSI period
+
+fundamentals:
+  alpha: 0.02           # Drift decay coefficient
+  window_252d: 252      # 252-day (1 year) window
+
+composite:
+  lambda: 2.0           # Risk aversion parameter
+  phi: 0.1              # VIX regime sensitivity
+  psi: 0.1              # Collinearity penalty
+  eta: 0.02             # Sector beta decay
+
+backtest:
+  threshold_long: 70.0  # Long signal threshold
+  threshold_short: 30.0 # Short signal threshold
+  transaction_cost: 0.001 # 0.1% per trade

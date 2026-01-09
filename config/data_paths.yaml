@@ -1,0 +1,23 @@
+# Data configuration paths
+
+paths:
+  raw_data: "data/raw/"
+  processed_data: "data/processed/"
+  cache_dir: "data/cache/"
+  examples: "data/examples/"
+
+sources:
+  default: "yfinance"  # Options: yfinance, alpha_vantage, polygon, csv
+  
+  yfinance:
+    enabled: true
+  
+  csv:
+    format: "ohlcv"  # Expected columns: Date, Open, High, Low, Close, Volume
+    encoding: "utf-8"
+    date_format: "%Y-%m-%d"
+
+cache:
+  enabled: true
+  ttl_days: 7  # Cache validity in days
+  compress: false
