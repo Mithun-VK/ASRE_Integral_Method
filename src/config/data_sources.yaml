@@ -1,0 +1,14 @@
+# Data Source Configuration
+
+data_sources:
+  fundamentals:
+    primary: 'fmp'          # Financial Modeling Prep
+    fallback: 'yfinance'    # Yahoo Finance
+
+  prices:
+    source: 'yfinance'      # Yahoo Finance
+
+cache:
+  enabled: true
+  directory: 'data/cache'
+  ttl_days: 30              # Cache for 30 days

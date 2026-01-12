@@ -94,7 +94,7 @@ class TechnicalConfig(ASREBaseConfig):
 class FundamentalsConfig(ASREBaseConfig):
     """Fundamental score configuration with all window parameters."""
     
-    alpha: float = Field(default=0.02, ge=0.01, le=0.1)
+    alpha: float = Field(default=0.12, ge=0.01, le=0.1)
     beta_1: float = Field(default=0.4, ge=0.1, le=0.7)
     beta_2: float = Field(default=0.35, ge=0.1, le=0.6)
     beta_3: float = Field(default=0.25, ge=0.05, le=0.5)
@@ -102,6 +102,11 @@ class FundamentalsConfig(ASREBaseConfig):
     pe_optimal: float = Field(default=18.0, ge=10.0, le=30.0)
     roe_target: float = Field(default=20.0, ge=10.0, le=40.0)
     de_threshold: float = Field(default=0.5, ge=0.2, le=1.5)
+    # Market proxy modulation strength
+    market_proxy_weight: float = 0.15
+
+    # Proxy smoothing window
+    proxy_window: int = 60
     
     # Comprehensive window parameters
     window_252d: int = Field(default=252, ge=200, le=300)

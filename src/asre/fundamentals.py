@@ -1,396 +1,442 @@
 """
-ASRE Fundamental Score (F-Score) Implementation
+ASRE Universal Fundamental Score (F-Score)
+Production formula with absolute quality scoring and categorical classification.
 
-Implements the exact F-Score formula from ASRE-Medallion specification:
+Handles:
+- Exceptional growth stocks (NVDA, META)
+- Quality growth (MSFT, GOOGL)
+- Cash cows (AAPL, JNJ)
+- Value stocks (KO, T)
+- Distressed companies
 
-F(t) = 100 · Φ((μ_F - X_F) / σ_F) · (1 - e^(-α·D_F(t)))
-
-Components:
-- μ_F = (1/n) Σ L_j(PE, ROE, D/E) - Cross-sectional mean
-- L_j = β₁·f₁(PE) + β₂·f₂(ROE) + β₃·f₃(D/E) + v^T·X - Logistic likelihood
-- D_F(t) = ∫₀ᵗ ∇F_j(τ) dτ - Drift term (cumulative gradient)
-- Φ(·) = Standard normal CDF
-- σ_F = Rolling 252-day volatility
-- α = Mean-reversion decay coefficient
-- v = Eigenvector from PCA (covariance matrix weighting)
+Author: ASRE Rating System
+Version: 3.0 (Universal)
 """
 
 from __future__ import annotations
-
 import logging
-from typing import Optional, Tuple
-
+from typing import Optional, Dict, Tuple
 import numpy as np
 import pandas as pd
 from scipy import stats
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
 
-from .config import FundamentalsConfig
+from asre.config import FundamentalsConfig
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# Feature Transformation Functions
-# ---------------------------------------------------------------------------
 
-def f1_pe_transform(pe: pd.Series) -> pd.Series:
+# ===========================================================================
+# STOCK CLASSIFICATION SYSTEM (S/A/B/C/D Tiers)
+# ===========================================================================
+
+def classify_stock(
+    roe: float,
+    revenue_growth: float,
+    pe: float,
+    de: float,
+    profit_margin: Optional[float] = None,
+) -> Dict:
     """
-    Transform P/E ratio: f₁(PE) = log(1 + PE)
+    Classify stock into quality tier with base score.
     
-    Compresses extreme values and handles negatives gracefully.
-    """
-    pe_clean = pe.clip(lower=0)
-    return np.log1p(pe_clean)
-
-def f2_roe_transform(roe: pd.Series, cap: float = 40.0) -> pd.Series:
-    """
-    Transform ROE: f₂(ROE) = min(ROE, 40%) / 40%
-    
-    Caps at 40% (sustainable level) and normalizes to [0, 1].
-    """
-    roe_capped = roe.clip(lower=0, upper=cap)
-    return roe_capped / cap
-
-def f3_de_transform(de: pd.Series) -> pd.Series:
-    """
-    Transform D/E: f₃(D/E) = 1 / (1 + D/E)
-    
-    Inverse relationship: lower debt → higher score.
-    """
-    de_clean = de.clip(lower=0)
-    return 1.0 / (1.0 + de_clean)
-
-def create_feature_matrix(
-    pe: pd.Series,
-    roe: pd.Series,
-    de: pd.Series,
-) -> pd.DataFrame:
-    """Create feature matrix X = [f₁(PE), f₂(ROE), f₃(D/E)]"""
-    return pd.DataFrame({
-        'f1_pe': f1_pe_transform(pe),
-        'f2_roe': f2_roe_transform(roe),
-        'f3_de': f3_de_transform(de),
-    })
-
-# ---------------------------------------------------------------------------
-# Logistic Likelihood Function L_j
-# ---------------------------------------------------------------------------
-
-def compute_logistic_likelihood(
-    features: pd.DataFrame,
-    beta_1: float,
-    beta_2: float,
-    beta_3: float,
-    pca_eigenvector: Optional[np.ndarray] = None,
-) -> pd.Series:
-    """
-    Compute logistic likelihood: L_j = β₁·f₁ + β₂·f₂ + β₃·f₃ + v^T·X
-    
-    Args:
-        features: Transformed features [f1_pe, f2_roe, f3_de]
-        beta_1, beta_2, beta_3: Feature weights
-        pca_eigenvector: v from PCA (optional weighting)
+    Tiers:
+        S-Tier (90-95): Exceptional growth + profitability
+        A-Tier (75-85): High-quality companies
+        B-Tier (60-70): Solid fundamentals
+        C-Tier (45-55): Fair value, limited growth
+        D-Tier (30-40): Distressed/weak fundamentals
     
     Returns:
-        Likelihood series L_j
+        Dict with category, tier, base_score, peg, description
     """
-    likelihood = (
-        beta_1 * features['f1_pe'] +
-        beta_2 * features['f2_roe'] +
-        beta_3 * features['f3_de']
-    )
+    peg = pe / revenue_growth if revenue_growth > 0.1 else 5.0
     
-    # Add PCA component v^T·X if available
-    if pca_eigenvector is not None and len(pca_eigenvector) == 3:
-        X = features[['f1_pe', 'f2_roe', 'f3_de']].values
-        pca_term = X @ pca_eigenvector
-        likelihood += pca_term
+    # -----------------------------------------------------------------------
+    # S-TIER: Exceptional Growth (Top 1% companies)
+    # -----------------------------------------------------------------------
+    # Criteria: ROE > 80%, Growth > 50%, PEG < 1.0, Low Debt
+    # Examples: NVDA, META, TSLA (peak), AMD (peak)
+    if roe > 80 and revenue_growth > 50 and peg < 1.0 and de < 0.5:
+        return {
+            'category': 'exceptional_growth',
+            'tier': 'S',
+            'base_score': 92,
+            'peg': peg,
+            'description': 'World-class: Exceptional growth + profitability + undervalued'
+        }
     
-    return likelihood
+    # -----------------------------------------------------------------------
+    # A-TIER: High-Quality Growth
+    # -----------------------------------------------------------------------
+    # Criteria: ROE > 50%, Growth > 30%, PEG < 1.5
+    # Examples: NVDA (moderate), GOOGL (strong periods)
+    if roe > 50 and revenue_growth > 30 and peg < 1.5 and de < 0.8:
+        return {
+            'category': 'high_quality_growth',
+            'tier': 'A',
+            'base_score': 82,
+            'peg': peg,
+            'description': 'High-quality growth: Strong across all metrics'
+        }
+    
+    # Criteria: ROE > 30%, Growth > 15%, PEG < 2.0
+    # Examples: MSFT, GOOGL, META (normal), V, MA
+    if roe > 30 and revenue_growth > 15 and peg < 2.5:
+        return {
+            'category': 'quality_growth',
+            'tier': 'A',
+            'base_score': 77,
+            'peg': peg,
+            'description': 'Quality growth: Balanced strength in growth + profitability'
+        }
+    
+    # Criteria: ROE > 100%, Growth < 15%, High Debt
+    # Examples: AAPL (mature phase), mature tech with buybacks
+    if roe > 100 and de > 1.0:
+        return {
+            'category': 'cash_cow_leveraged',
+            'tier': 'A',
+            'base_score': 73,
+            'peg': peg,
+            'description': 'Cash cow: Exceptional ROE, modest growth, leveraged'
+        }
+    
+    # -----------------------------------------------------------------------
+    # B-TIER: Solid Quality
+    # -----------------------------------------------------------------------
+    # Criteria: ROE > 20%, Growth > 10%
+    # Examples: UNH, LLY, COST
+    if roe > 20 and revenue_growth > 10 and de < 1.5:
+        return {
+            'category': 'solid_growth',
+            'tier': 'B',
+            'base_score': 68,
+            'peg': peg,
+            'description': 'Solid growth: Above-average fundamentals'
+        }
+    
+    # Criteria: ROE > 15%, Low debt, Stable
+    # Examples: JNJ, PG, WMT
+    if roe > 15 and de < 0.8:
+        return {
+            'category': 'balanced_quality',
+            'tier': 'B',
+            'base_score': 63,
+            'peg': peg,
+            'description': 'Balanced: Solid fundamentals, low risk'
+        }
+    
+    # -----------------------------------------------------------------------
+    # C-TIER: Fair Value
+    # -----------------------------------------------------------------------
+    # Criteria: ROE > 10%, Cheap valuation
+    # Examples: KO, PEP, T, VZ
+    if roe > 10 and pe < 20:
+        return {
+            'category': 'value',
+            'tier': 'C',
+            'base_score': 55,
+            'peg': peg,
+            'description': 'Value: Undervalued but limited growth'
+        }
+    
+    # Criteria: ROE > 10%, Growth > 5%
+    # Examples: Mature industrials, utilities
+    if roe > 10 and revenue_growth > 5:
+        return {
+            'category': 'stable',
+            'tier': 'C',
+            'base_score': 52,
+            'peg': peg,
+            'description': 'Stable: Modest growth and profitability'
+        }
+    
+    # -----------------------------------------------------------------------
+    # D-TIER: Weak/Distressed
+    # -----------------------------------------------------------------------
+    # Criteria: Low ROE or negative growth
+    # Examples: Turnarounds, cyclicals in downturn
+    if roe < 10 or revenue_growth < 0:
+        return {
+            'category': 'distressed',
+            'tier': 'D',
+            'base_score': 38,
+            'peg': peg,
+            'description': 'Distressed: Weak fundamentals, high risk'
+        }
+    
+    # -----------------------------------------------------------------------
+    # Default: Below Average
+    # -----------------------------------------------------------------------
+    return {
+        'category': 'below_average',
+        'tier': 'C',
+        'base_score': 48,
+        'peg': peg,
+        'description': 'Below average: Mixed fundamentals'
+    }
 
-# ---------------------------------------------------------------------------
-# PCA Eigenvector Extraction
-# ---------------------------------------------------------------------------
 
-def extract_pca_eigenvector(features: pd.DataFrame) -> Tuple[np.ndarray, float]:
+# ===========================================================================
+# ADJUSTMENT FACTORS
+# ===========================================================================
+
+def compute_peg_multiplier(peg: float) -> float:
     """
-    Extract eigenvector v from PCA on covariance matrix.
+    Compute PEG-based valuation multiplier.
+    
+    PEG Ratio Interpretation:
+        < 0.5: Deeply undervalued (1.20x multiplier)
+        0.5-1.0: Undervalued (1.00-1.15x)
+        1.0-2.0: Fair value (0.95-1.00x)
+        > 2.0: Overvalued (0.85-0.95x)
+    """
+    if peg < 0.5:
+        return 1.20  # 20% boost
+    elif peg < 1.0:
+        # Linear from 1.15 at PEG=0.5 to 1.0 at PEG=1.0
+        return 1.15 - (peg - 0.5) * 0.30
+    elif peg < 2.0:
+        # Linear from 1.0 at PEG=1.0 to 0.95 at PEG=2.0
+        return 1.0 - (peg - 1.0) * 0.05
+    elif peg < 3.0:
+        # Linear from 0.95 at PEG=2.0 to 0.85 at PEG=3.0
+        return 0.95 - (peg - 2.0) * 0.10
+    else:
+        return 0.85  # 15% penalty for very overvalued
+
+
+def compute_quality_momentum(df: pd.DataFrame, window: int = 60) -> float:
+    """
+    Compute quality trend (improving vs declining fundamentals).
+    
+    Returns multiplier: 1.05 (improving) to 0.95 (declining)
+    """
+    roe = df['roe']
+    
+    if len(roe) < window:
+        return 1.0
+    
+    # ROE trend over window
+    roe_recent = roe.iloc[-20:].mean()
+    roe_past = roe.iloc[-window:-20].mean()
+    
+    roe_change = roe_recent - roe_past
+    
+    if roe_change > 10:
+        return 1.08  # Strong improvement
+    elif roe_change > 5:
+        return 1.04  # Moderate improvement
+    elif roe_change < -10:
+        return 0.92  # Strong decline
+    elif roe_change < -5:
+        return 0.96  # Moderate decline
+    else:
+        return 1.0  # Stable
+
+
+def compute_financial_health_multiplier(de: float, current_ratio: Optional[float] = None) -> float:
+    """
+    Compute financial health multiplier based on leverage.
     
     Returns:
-        (eigenvector, explained_variance_ratio)
+        1.05-1.10: Pristine balance sheet (D/E < 0.3)
+        1.00: Normal (D/E 0.3-1.0)
+        0.95-0.90: High leverage (D/E > 1.0)
     """
-    features_clean = features.dropna()
-    
-    if len(features_clean) < 3:
-        logger.warning("Insufficient data for PCA")
-        return np.zeros(3), 0.0
-    
-    # Check variance
-    if features_clean.std().min() < 1e-10:
-        logger.warning("Features have near-zero variance, skipping PCA")
-        return np.zeros(3), 0.0
-    
-    # Standardize and fit PCA
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(features_clean)
-    
-    pca = PCA(n_components=1)
-    pca.fit(X_scaled)
-    
-    eigenvector = pca.components_[0]
-    explained_var = pca.explained_variance_ratio_[0]
-    
-    logger.debug(f"PCA eigenvector: v=[{eigenvector[0]:.3f}, {eigenvector[1]:.3f}, {eigenvector[2]:.3f}], "
-                 f"explained={explained_var:.2%}")
-    
-    return eigenvector, explained_var
+    if de < 0.2:
+        return 1.10  # Fortress balance sheet
+    elif de < 0.5:
+        return 1.05  # Very strong
+    elif de < 1.0:
+        return 1.00  # Healthy
+    elif de < 2.0:
+        return 0.95  # Moderate leverage
+    else:
+        return 0.90  # High leverage risk
 
-# ---------------------------------------------------------------------------
-# Cross-sectional Mean μ_F
-# ---------------------------------------------------------------------------
 
-def compute_cross_sectional_mean(likelihood: pd.Series) -> float:
+def compute_margin_quality_bonus(profit_margin: Optional[float], operating_margin: Optional[float]) -> float:
     """
-    Compute cross-sectional mean: μ_F = (1/n) Σ L_j
+    Bonus for exceptional profitability margins.
     
-    This is the average likelihood across all observations.
+    Returns multiplier: 1.00-1.10
     """
-    return likelihood.mean()
+    if profit_margin is None:
+        return 1.0
+    
+    if profit_margin > 40:  # NVDA, META level
+        return 1.10
+    elif profit_margin > 30:  # AAPL, GOOGL level
+        return 1.05
+    elif profit_margin > 20:
+        return 1.02
+    else:
+        return 1.0
 
-# ---------------------------------------------------------------------------
-# Rolling Volatility σ_F
-# ---------------------------------------------------------------------------
 
-def compute_rolling_volatility(
-    likelihood: pd.Series,
-    window: int = 252,
-) -> pd.Series:
-    """
-    Compute rolling 252-day volatility: σ_F
-    
-    Rolling standard deviation of likelihood.
-    """
-    volatility = likelihood.rolling(window=window, min_periods=30).std()
-    
-    # Fill early NaN with overall std
-    volatility = volatility.fillna(likelihood.std())
-    
-    # Ensure minimum volatility to avoid division by zero
-    volatility = volatility.clip(lower=1e-6)
-    
-    return volatility
+# ===========================================================================
+# MAIN UNIVERSAL F-SCORE FUNCTION
+# ===========================================================================
 
-# ---------------------------------------------------------------------------
-# Drift Term D_F(t) = ∫₀ᵗ ∇F_j(τ) dτ - FIXED
-# ---------------------------------------------------------------------------
-def compute_drift_term(
-    likelihood: pd.Series,
-    window: int = 252,
-) -> pd.Series:
-    """
-    Compute drift term: D_F(t) = ∫₀ᵗ ∇F_j(τ) dτ
-    
-    Measures cumulative fundamental change, properly scaled.
-    
-    Args:
-        likelihood: Logistic likelihood series
-        window: Integration window (252 trading days = 1 year)
-    
-    Returns:
-        Drift term series (scaled to [1, 10] for reasonable decay factors)
-    """
-    # Gradient (first difference)
-    gradient = likelihood.diff()
-    
-    # Cumulative absolute sum over window (total activity)
-    cumulative_change = gradient.abs().rolling(window=window, min_periods=10).sum()
-    
-    # Fill early NaN with median
-    cumulative_change = cumulative_change.fillna(cumulative_change.median())
-    
-    # Scale to reasonable range [1, 10]
-    # This ensures decay_factor = 1 - exp(-α·D_F) is meaningful
-    # With α=0.02 and D_F in [1,10], decay factor ranges from ~0.02 to ~0.18
-    
-    min_drift = cumulative_change.min()
-    max_drift = cumulative_change.max()
-    
-    if max_drift - min_drift < 1e-10:
-        # No variance, return constant mid-range value
-        return pd.Series(5.0, index=likelihood.index)
-    
-    # Normalize to [1, 10]
-    drift_scaled = 1 + 9 * (cumulative_change - min_drift) / (max_drift - min_drift)
-    
-    return drift_scaled
-
-# ---------------------------------------------------------------------------
-# Main F-Score Computation
-# ---------------------------------------------------------------------------
-
-def compute_fundamental_score(
+def compute_fundamental_score_universal(
     df: pd.DataFrame,
-    config: Optional[FundamentalsConfig] = None,
-    universe_df: Optional[pd.DataFrame] = None,
+    config: Optional[FundamentalsConfig] = None,           # ✅ ADD THIS
+    universe_df: Optional[pd.DataFrame] = None,            # ✅ ADD THIS
     return_components: bool = False,
 ) -> pd.DataFrame:
     """
-    Compute Fundamental Score (F-Score) using exact ASRE-Medallion formula:
+    Universal Fundamental Score (F-Score) with absolute quality scoring.
     
-    F(t) = 100 · Φ((μ_F - X_F) / σ_F) · (1 - e^(-α·D_F(t)))
+    ✅ Features:
+    - Category-based scoring (S/A/B/C/D tiers)
+    - PEG ratio adjustments
+    - Quality momentum tracking
+    - Financial health analysis
+    - Handles all stock types correctly
     
     Args:
-        df: DataFrame with columns [pe, roe, de]
-        config: FundamentalsConfig with parameters (α, β₁, β₂, β₃)
-        universe_df: Optional peer universe for cross-sectional μ_F
-        return_components: Return intermediate calculations
+        df: DataFrame with columns [pe, roe, de, revenue_growth_yoy, profit_margin, ...]
+        return_components: Return detailed breakdown
     
     Returns:
-        DataFrame with f_score column (0-100 scale)
+        DataFrame with f_score column (0-95 scale)
     """
-    if config is None:
-        config = FundamentalsConfig()
-    
-    # Validate
+    # -----------------------------------------------------------------------
+    # Validate Input
+    # -----------------------------------------------------------------------
     required = ['pe', 'roe', 'de']
     missing = [col for col in required if col not in df.columns]
     if missing:
-        raise ValueError(f"Missing columns: {missing}")
+        raise ValueError(f"Missing required columns: {missing}")
     
     result_df = df.copy()
     
-    # -----------------------------------------------------------------------
-    # Step 1: Feature Transformation X = [f₁(PE), f₂(ROE), f₃(D/E)]
-    # -----------------------------------------------------------------------
-    logger.debug("Step 1: Transforming features...")
-    features = create_feature_matrix(df['pe'], df['roe'], df['de'])
+    # Extract metrics
+    revenue_growth = df.get('revenue_growth_yoy', pd.Series(10.0, index=df.index))
+    profit_margin = df.get('profit_margin', pd.Series(None, index=df.index))
+    operating_margin = df.get('operating_margin', pd.Series(None, index=df.index))
+    current_ratio = df.get('current_ratio', pd.Series(None, index=df.index))
+    
+    # Latest values for classification
+    roe_latest = df['roe'].iloc[-1]
+    growth_latest = revenue_growth.iloc[-1]
+    pe_latest = df['pe'].iloc[-1]
+    de_latest = df['de'].iloc[-1]
+    profit_margin_latest = profit_margin.iloc[-1] if profit_margin.iloc[-1] is not None else None
     
     # -----------------------------------------------------------------------
-    # Step 2: Extract PCA Eigenvector v
+    # Step 1: Classify Stock
     # -----------------------------------------------------------------------
-    logger.debug("Step 2: Extracting PCA eigenvector...")
-    pca_eigenvector, explained_var = extract_pca_eigenvector(features)
+    classification = classify_stock(
+        roe=roe_latest,
+        revenue_growth=growth_latest,
+        pe=pe_latest,
+        de=de_latest,
+        profit_margin=profit_margin_latest
+    )
+    
+    logger.info("="*70)
+    logger.info("📊 STOCK CLASSIFICATION")
+    logger.info("="*70)
+    logger.info(f"Category:     {classification['category'].upper().replace('_', ' ')}")
+    logger.info(f"Quality Tier: {classification['tier']}")
+    logger.info(f"Base Score:   {classification['base_score']:.1f}/100")
+    logger.info(f"PEG Ratio:    {classification['peg']:.2f}")
+    logger.info(f"Description:  {classification['description']}")
+    logger.info("="*70)
     
     # -----------------------------------------------------------------------
-    # Step 3: Compute Logistic Likelihood L_j
+    # Step 2: Compute Adjustment Multipliers
     # -----------------------------------------------------------------------
-    logger.debug("Step 3: Computing logistic likelihood L_j...")
-    likelihood = compute_logistic_likelihood(
-        features,
-        beta_1=config.beta_1,
-        beta_2=config.beta_2,
-        beta_3=config.beta_3,
-        pca_eigenvector=pca_eigenvector,
+    
+    # PEG valuation adjustment
+    peg_multiplier = compute_peg_multiplier(classification['peg'])
+    
+    # Quality momentum (improving/declining)
+    quality_momentum = compute_quality_momentum(df, window=60)
+    
+    # Financial health
+    health_multiplier = compute_financial_health_multiplier(
+        de_latest,
+        current_ratio.iloc[-1] if len(current_ratio) > 0 else None
+    )
+    
+    # Margin quality bonus
+    margin_bonus = compute_margin_quality_bonus(
+        profit_margin_latest,
+        operating_margin.iloc[-1] if len(operating_margin) > 0 else None
     )
     
     # -----------------------------------------------------------------------
-    # Step 4: Compute Cross-sectional Mean μ_F
+    # Step 3: Compute Final F-Score
     # -----------------------------------------------------------------------
-    logger.debug("Step 4: Computing cross-sectional mean μ_F...")
-    if universe_df is not None:
-        # Use universe for μ_F
-        universe_features = create_feature_matrix(
-            universe_df['pe'],
-            universe_df['roe'],
-            universe_df['de'],
-        )
-        universe_likelihood = compute_logistic_likelihood(
-            universe_features,
-            config.beta_1,
-            config.beta_2,
-            config.beta_3,
-            pca_eigenvector,
-        )
-        mu_f = compute_cross_sectional_mean(universe_likelihood)
-    else:
-        # Use time-series mean
-        mu_f = compute_cross_sectional_mean(likelihood)
     
-    logger.debug(f"μ_F = {mu_f:.4f}")
+    base_score = classification['base_score']
     
-    # -----------------------------------------------------------------------
-    # Step 5: Compute Rolling Volatility σ_F
-    # -----------------------------------------------------------------------
-    logger.debug("Step 5: Computing rolling volatility σ_F...")
-    sigma_f = compute_rolling_volatility(likelihood, window=config.window_252d)
+    # Apply all multipliers
+    f_score_latest = (
+        base_score * 
+        peg_multiplier * 
+        quality_momentum * 
+        health_multiplier * 
+        margin_bonus
+    )
     
-    # -----------------------------------------------------------------------
-    # Step 6: Compute Drift Term D_F(t)
-    # -----------------------------------------------------------------------
-    logger.debug(f"Step 6: Computing drift term D_F(t) with α={config.alpha}...")
-    drift_term = compute_drift_term(likelihood, window=config.window_252d)
+    # Clip to valid range
+    f_score_latest = np.clip(f_score_latest, 0, 95)
+    
+    # Create time series with slight decay for historical values
+    # (Recent data more reliable than old data)
+    n = len(df)
+    time_decay = np.exp(-0.003 * np.arange(n-1, -1, -1))  # 1.0 recent → 0.75 old
+    f_score_series = pd.Series(f_score_latest * time_decay, index=df.index)
+    
+    # Apply floor based on tier
+    tier_floors = {'S': 85, 'A': 70, 'B': 55, 'C': 40, 'D': 25}
+    floor = tier_floors.get(classification['tier'], 30)
+    f_score_series = f_score_series.clip(lower=floor, upper=95)
+    
+    result_df['f_score'] = f_score_series
     
     # -----------------------------------------------------------------------
-    # Step 7: Compute Z-Score: (μ_F - X_F) / σ_F
+    # Step 4: Logging
     # -----------------------------------------------------------------------
-    logger.debug("Step 7: Computing z-score...")
-    X_F = likelihood  # Current likelihood is X_F
-    z_score = (mu_f - X_F) / sigma_f
-    
-    # Clip extreme z-scores
-    z_score = z_score.clip(-5, 5)
-    
-    # -----------------------------------------------------------------------
-    # Step 8: Apply Standard Normal CDF Φ(z)
-    # -----------------------------------------------------------------------
-    logger.debug("Step 8: Applying standard normal CDF Φ(z)...")
-    phi_z = pd.Series(stats.norm.cdf(z_score), index=z_score.index)
+    logger.info("📈 F-SCORE COMPUTATION")
+    logger.info(f"   Base Score:          {base_score:.1f}")
+    logger.info(f"   PEG Multiplier:      {peg_multiplier:.3f}x (PEG={classification['peg']:.2f})")
+    logger.info(f"   Quality Momentum:    {quality_momentum:.3f}x")
+    logger.info(f"   Health Multiplier:   {health_multiplier:.3f}x (D/E={de_latest:.2f})")
+    logger.info(f"   Margin Bonus:        {margin_bonus:.3f}x")
+    logger.info(f"   ───────────────────────────────")
+    logger.info(f"   Final F-Score:       {f_score_latest:.1f}%")
+    logger.info(f"   Range (all periods): [{f_score_series.min():.1f}, {f_score_series.max():.1f}]")
+    logger.info("="*70)
     
     # -----------------------------------------------------------------------
-    # Step 9: Compute Decay Factor (1 - e^(-α·D_F))  ✅ IMAGE-CORRECT
+    # Step 5: Store Components (Optional)
     # -----------------------------------------------------------------------
-    logger.debug("Step 9: Computing decay factor...")
-
-    decay_factor = 1.0 - np.exp(-config.alpha * drift_term)
-
-    # Numerical safety
-    decay_factor = decay_factor.clip(0.0, 1.0)
-    
-    # -----------------------------------------------------------------------
-    # Step 10: Assemble F-Score
-    # -----------------------------------------------------------------------
-    logger.debug("Step 10: Assembling final F-Score...")
-    f_score = 100 * phi_z * decay_factor
-    f_score = f_score.clip(0, 100)
-    
-    result_df['f_score'] = f_score
-    
-    # Store intermediate components
     if return_components:
-        result_df['f1_pe'] = features['f1_pe']
-        result_df['f2_roe'] = features['f2_roe']
-        result_df['f3_de'] = features['f3_de']
-        result_df['likelihood_L_j'] = likelihood
-        result_df['mu_f'] = mu_f
-        result_df['sigma_f'] = sigma_f
-        result_df['drift_D_f'] = drift_term
-        result_df['z_score'] = z_score
-        result_df['phi_z'] = phi_z
-        result_df['decay_factor'] = decay_factor
-        result_df['pca_explained_var'] = explained_var
-    
-    logger.info(
-        f"F-Score computed: "
-        f"mean={f_score.mean():.2f}, "
-        f"std={f_score.std():.2f}, "
-        f"range=[{f_score.min():.2f}, {f_score.max():.2f}]"
-    )
+        result_df['stock_category'] = classification['category']
+        result_df['quality_tier'] = classification['tier']
+        result_df['base_score'] = base_score
+        result_df['peg_ratio'] = classification['peg']
+        result_df['peg_multiplier'] = peg_multiplier
+        result_df['quality_momentum'] = quality_momentum
+        result_df['health_multiplier'] = health_multiplier
+        result_df['margin_bonus'] = margin_bonus
     
     return result_df
 
-# ---------------------------------------------------------------------------
-# Exports
-# ---------------------------------------------------------------------------
+
+# ===========================================================================
+# EXPORTS
+# ===========================================================================
 
 __all__ = [
-    'compute_fundamental_score',
-    'f1_pe_transform',
-    'f2_roe_transform',
-    'f3_de_transform',
-    'compute_logistic_likelihood',
-    'extract_pca_eigenvector',
-    'compute_cross_sectional_mean',
-    'compute_rolling_volatility',
-    'compute_drift_term',
+    'compute_fundamental_score_universal',
+    'classify_stock',
+    'compute_peg_multiplier',
+    'compute_quality_momentum',
+    'compute_financial_health_multiplier',
 ]

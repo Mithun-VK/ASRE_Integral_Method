@@ -1,0 +1,15 @@
+# ASRE Backtest Configuration
+
+backtest:
+  initial_capital: 100000
+  rebalance_frequency: 'Q'  # Q=Quarterly, M=Monthly
+  transaction_cost: 0.001   # 0.1%
+
+thresholds:
+  buy: 70                   # R_ASRE >= 70 = BUY
+  sell: 40                  # R_ASRE < 40 = SELL
+  fundamental_floor: 65     # F-Score >= 65 required
+
+risk_management:
+  max_position_size: 1.0    # 100% of capital (single stock)
+  max_drawdown: 0.5         # 50% max drawdown

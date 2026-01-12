@@ -21,7 +21,7 @@ from .config import (
 )
 
 # Core modules
-from .fundamentals import compute_fundamental_score
+from .fundamentals import compute_fundamental_score_universal as compute_fundamental_score
 from .technical import compute_technical_score
 from .momentum import compute_momentum_score
 from .composite import (
