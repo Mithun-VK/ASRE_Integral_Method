@@ -126,8 +126,8 @@ DEFAULT_PARAM_SPACES = {
     # Fundamental parameters
     'alpha': ParameterSpace('alpha', (0.01, 0.05), 'continuous', 0.02, 'fundamentals'),
     'beta_1': ParameterSpace('beta_1', (0.2, 0.6), 'continuous', 0.4, 'fundamentals'),
-    'beta_2': ParameterSpace('beta_2', (0.2, 0.5), 'continuous', 0.35, 'fundamentals'),
-    'beta_3': ParameterSpace('beta_3', (0.1, 0.4), 'continuous', 0.25, 'fundamentals'),
+    'beta_2': ParameterSpace('beta_2', (0.2, 0.5), 'continuous', 0.30, 'fundamentals'),
+    'beta_3': ParameterSpace('beta_3', (0.1, 0.4), 'continuous', 0.30, 'fundamentals'),
     
     # Composite parameters
     'lambda_risk': ParameterSpace('lambda_risk', (1.5, 2.5), 'continuous', 2.0, 'composite'),
@@ -184,8 +184,8 @@ def create_configs_from_params(params: Dict[str, float]) -> Dict[str, Any]:
         configs['fundamentals'] = FundamentalsConfig(
             alpha=params.get('alpha', 0.02),
             beta_1=params.get('beta_1', 0.4),
-            beta_2=params.get('beta_2', 0.35),
-            beta_3=params.get('beta_3', 0.25),
+            beta_2=params.get('beta_2', 0.30),
+            beta_3=params.get('beta_3', 0.30),
         )
     
     # Composite config

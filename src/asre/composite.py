@@ -202,7 +202,7 @@ def optimize_weights(
 
     if len(S) < 30:
         logger.warning("Insufficient data for optimization, using default weights")
-        return np.array([0.4, 0.35, 0.25])
+        return np.array([0.40, 0.30, 0.30])
 
     # MLE-based initial guess
     if use_mle and returns is not None:
@@ -221,12 +221,12 @@ def optimize_weights(
                 w0 = w0 / w0.sum()
                 logger.info(f"MLE weights: {w0}, AUC: {auc:.3f}")
             else:
-                w0 = np.array([0.4, 0.35, 0.25])
+                w0 = np.array([0.40, 0.30, 0.30])
         except Exception as e:
             logger.warning(f"MLE calibration failed: {e}, using defaults")
-            w0 = np.array([0.4, 0.35, 0.25])
+            w0 = np.array([0.40, 0.30, 0.30])
     else:
-        w0 = np.array([0.4, 0.35, 0.25])
+        w0 = np.array([0.40, 0.30, 0.30])
 
     # Calculate covariance matrix
     cov_matrix = np.cov(S.T)
@@ -245,7 +245,11 @@ def optimize_weights(
         return portfolio_var - lambda_risk * sharpe
 
     constraints = [{'type': 'eq', 'fun': lambda w: np.sum(w) - 1}]
-    bounds = [(0.1, 0.8) for _ in range(3)]
+    bounds = [
+        (0.35, 0.45),  # F: 35-45% (centered on 40%)
+        (0.25, 0.35),  # T: 25-35% (centered on 30%)
+        (0.25, 0.35),  # M: 25-35% (centered on 30%)
+    ]
 
     try:
         result = minimize(
@@ -373,6 +377,57 @@ class DipQualityMetrics:
 # ---------------------------------------------------------------------------
 # NEW: COMPUTE DIP QUALITY SCORE (✅ BUG FIXED)
 # ---------------------------------------------------------------------------
+def get_dip_stage_tier_aware(f_score: float, m_score: float, t_score: float) -> Tuple[str, float]:
+    """
+    Determine dip stage with tier-aware thresholds.
+    
+    Higher quality stocks (S/A-tier) get more lenient momentum thresholds.
+    Lower quality stocks (C/D-tier) require stricter entry timing.
+    
+    Returns:
+        (stage, multiplier): Stage name and adjustment multiplier
+    """
+    # S-Tier (F≥85): World-class companies - can handle higher momentum
+    if f_score >= 85:
+        if m_score < 60:
+            return "EARLY", 1.00
+        elif m_score < 75:
+            return "MID", 0.90
+        elif m_score < 90:
+            return "LATE", 0.70
+        else:
+            return "RECOVERY", 0.20
+    
+    # A-Tier (F 70-84): High-quality growth - moderate thresholds
+    elif f_score >= 70:
+        if m_score < 50:
+            return "EARLY", 1.00
+        elif m_score < 70:
+            return "MID", 0.85
+        elif m_score < 85:
+            return "LATE", 0.60
+        else:
+            return "RECOVERY", 0.20
+    
+    # B-Tier (F 55-69): Solid quality - standard thresholds
+    elif f_score >= 55:
+        if m_score < 40:
+            return "EARLY", 0.95
+        elif m_score < 60:
+            return "MID", 0.75
+        elif m_score < 80:
+            return "LATE", 0.50
+        else:
+            return "RECOVERY", 0.20
+    
+    # C/D-Tier (F<55): Weak fundamentals - strict thresholds
+    else:
+        if m_score < 30:
+            return "EARLY", 0.80
+        elif m_score < 50:
+            return "MID", 0.60
+        else:
+            return "LATE", 0.30
 
 def compute_dip_quality_score(
     f_score: float,
@@ -383,7 +438,7 @@ def compute_dip_quality_score(
     sector_beta: Optional[float] = None,
 ) -> DipQualityMetrics:
     """
-    Compute comprehensive dip quality score.
+    Compute comprehensive dip quality score (TIER-AWARE ENHANCED).
 
     HIGH quality dip = Strong fundamentals + Early entry + Low momentum recovery
     LOW quality dip = Weak fundamentals OR Late entry OR Already recovered
@@ -401,7 +456,6 @@ def compute_dip_quality_score(
     """
 
     # Step 1: Entry Timing Score (inversely related to momentum)
-    # Lower momentum = earlier in dip = better entry timing
     entry_timing_score = 100.0 - m_score
 
     # Bonus for extremely low momentum (< 20%)
@@ -412,12 +466,10 @@ def compute_dip_quality_score(
     if m_score > 80:
         entry_timing_score = max(0, entry_timing_score * 0.5)
 
-
     # Step 2: Momentum Divergence Score
-    # Measures how oversold technicals are vs momentum
     momentum_divergence = abs(t_score - m_score)
 
-    # ✅ FIX: Initialize both variables at the start
+    # Initialize divergence adjustments
     divergence_penalty = 0.0
     divergence_bonus = 0.0
 
@@ -428,28 +480,24 @@ def compute_dip_quality_score(
     elif t_score < 20 and m_score < 30:
         divergence_bonus = 20.0  # Perfect early dip
 
-
-    # Step 3: Fundamental Strength Assessment
-    # Strong fundamentals (F > 70%) increase dip quality
+    # Step 3: Fundamental Strength Assessment (TIER-AWARE BOOST ✅)
     if f_score >= 85:
         fundamental_strength = 100.0
-        fundamental_multiplier = 1.3
+        fundamental_multiplier = 1.40  # S-Tier bonus (META!)
     elif f_score >= 70:
-        fundamental_strength = 85.0
-        fundamental_multiplier = 1.15
+        fundamental_strength = 90.0
+        fundamental_multiplier = 1.25  # A-Tier boost
     elif f_score >= 60:
-        fundamental_strength = 70.0
-        fundamental_multiplier = 1.0
+        fundamental_strength = 75.0
+        fundamental_multiplier = 1.00
     elif f_score >= 50:
-        fundamental_strength = 50.0
+        fundamental_strength = 55.0
         fundamental_multiplier = 0.85
     else:
-        fundamental_strength = 30.0
-        fundamental_multiplier = 0.6
+        fundamental_strength = 35.0
+        fundamental_multiplier = 0.60
 
-
-    # Step 4: Core Dip Quality Formula
-    # Base formula: F × (1 - M/100) × Entry_Timing_Factor
+    # Step 4: Core Dip Quality Formula (ENHANCED)
     base_quality = f_score * (1.0 - m_score / 100.0)
 
     # Apply entry timing boost
@@ -465,32 +513,18 @@ def compute_dip_quality_score(
     # Clip to 0-100 range
     dip_quality_score = np.clip(dip_quality_raw, 0, 100)
 
-
-    # Step 5: Determine Dip Stage
-    if t_score < 10 and m_score < 20:
-        dip_stage = "EARLY"  # Best entry point
-    elif t_score < 20 and m_score < 40:
-        dip_stage = "MID"  # Good entry point
-    elif t_score < 20 and m_score >= 40:
-        dip_stage = "LATE"  # Marginal entry point
-    elif t_score < 30 and m_score >= 70:
-        dip_stage = "RECOVERY"  # Already bouncing, too late
-    else:
-        dip_stage = "UNDEFINED"
-
+    # Step 5: Determine Dip Stage (TIER-AWARE ✅)
+    dip_stage, stage_multiplier = get_dip_stage_tier_aware(f_score, m_score, t_score)
 
     # Step 6: Expected Upside Calculation
-    # Based on technical oversold level and fundamental strength
     technical_upside = (20.0 - t_score) * 0.5 if t_score < 20 else 0.0
     fundamental_upside = (f_score - 50.0) * 0.3 if f_score > 50 else 0.0
 
     expected_upside = technical_upside + fundamental_upside
     expected_upside = max(0, expected_upside)
 
-
     # Step 7: Risk-Reward Ratio
-    # Downside risk increases with high momentum (already recovered)
-    downside_risk = max(5.0, m_score * 0.15)  # Higher M = higher risk of pullback
+    downside_risk = max(5.0, m_score * 0.15)
 
     # Adjust for volatility if available
     if historical_volatility is not None:
@@ -499,13 +533,7 @@ def compute_dip_quality_score(
 
     risk_reward_ratio = expected_upside / downside_risk if downside_risk > 0 else 0.0
 
-
     # Step 8: Confidence Score
-    # Higher confidence when:
-    # - Low component variance (scores agree)
-    # - Clear dip stage identification
-    # - Strong fundamentals
-
     variance_confidence = 100.0 - min(100, variance * 2.0)
     stage_confidence = {
         "EARLY": 95.0,
@@ -520,7 +548,6 @@ def compute_dip_quality_score(
     confidence = (variance_confidence * 0.3 + 
                   stage_confidence * 0.4 + 
                   fundamental_confidence * 0.3)
-
 
     return DipQualityMetrics(
         dip_quality_score=dip_quality_score,
@@ -973,7 +1000,6 @@ def compute_asre_rating(
 # ===========================================================================
 # FULLY FIXED MEDALLION FUNCTION WITH FUNDAMENTAL FLOOR
 # ===========================================================================
-
 def compute_asre_medallion(
     df: pd.DataFrame,
     config: Optional[CompositeConfig] = None,
@@ -989,6 +1015,7 @@ def compute_asre_medallion(
     ✅ CRITICAL: Applies SAME penalties as compute_asre_rating()
     ✅ Checks for _fundamental_floor_violated flag from R_Final computation
     ✅ Rejects momentum traps (F < 65, M > 80) just like R_Final
+    ✅ Rejects pump risk (F < 50, T > 80) just like R_Final
     """
 
     if config is None:
@@ -1042,6 +1069,30 @@ def compute_asre_medallion(
         penalty_multiplier = 0.25 * (divergence['f_score'] / 65.0)
         r_asre_base = pd.Series(divergence['f_score'] * penalty_multiplier, index=result_df.index)
         r_asre_base = r_asre_base.clip(1, 25)
+
+        result_df['r_asre'] = r_asre_base
+
+        logger.info(
+            f"R_ASRE computed: mean={r_asre_base.mean():.2f}, "
+            f"range=[{r_asre_base.min():.2f}, {r_asre_base.max():.2f}]"
+        )
+
+        return result_df
+
+    # ✅ NEW: PUMP RISK CHECK (same as R_Final)
+    if divergence['is_pump_risk']:
+        logger.warning(
+            f"⚠️ Medallion: PUMP RISK detected "
+            f"(F={divergence['f_score']:.0f}%, T={divergence['t_score']:.0f}%)"
+        )
+
+        # Apply heavy penalty (same as R_Final)
+        pump_penalty = 0.6
+        r_asre_base = pd.Series(
+            divergence['f_score'] * pump_penalty, 
+            index=result_df.index
+        )
+        r_asre_base = r_asre_base.clip(1, 30)  # Max 30 for pump risk
 
         result_df['r_asre'] = r_asre_base
 
