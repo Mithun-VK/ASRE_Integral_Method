@@ -1,0 +1,211 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Global Resets ─── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent text size inflation on mobile */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #0F0F0F;
+  color: #E5E7EB;
+  overflow-x: hidden;
+  /* Prevent overscroll bounce on iOS */
+  overscroll-behavior-y: none;
+}
+
+/* ─── Scrollbar Styling (desktop only) ─── */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0F0F0F; }
+  ::-webkit-scrollbar-thumb { background: #DC2626; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #EF4444; }
+}
+
+/* ─── Selection Color ─── */
+::selection {
+  background: rgba(220, 38, 38, 0.3);
+  color: #fff;
+}
+
+/* ─── Custom Utility Classes ─── */
+@layer components {
+
+  /* Container — 16px padding on mobile, scales up */
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Section vertical rhythm — tighter on mobile */
+  .section-padding {
+    @apply py-12 sm:py-16 lg:py-24;
+  }
+
+  /* Glass card — touch-friendly rounded corners */
+  .glass-card {
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-2xl;
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-500
+           hover:bg-white/[0.06] hover:border-ark-red/30
+           hover:shadow-lg hover:shadow-ark-red/5
+           sm:hover:-translate-y-1;
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-ark-red via-red-400 to-ark-red-light;
+  }
+
+  .gradient-text-gold {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-ark-gold via-yellow-300 to-ark-gold-light;
+  }
+
+  /* Responsive section titles */
+  .section-title {
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight;
+  }
+
+  /* Section subtitle — readable on all sizes */
+  .section-subtitle {
+    @apply text-base sm:text-lg text-gray-400 max-w-2xl leading-relaxed;
+  }
+
+  /* Glows */
+  .red-glow {
+    box-shadow: 0 0 40px rgba(220, 38, 38, 0.15), 0 0 120px rgba(220, 38, 38, 0.05);
+  }
+
+  .gold-glow {
+    box-shadow: 0 0 40px rgba(245, 158, 11, 0.15), 0 0 120px rgba(245, 158, 11, 0.05);
+  }
+
+  /* Touch-target minimum — 44px on mobile */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Truncate long hash/run-id values on small screens */
+  .hash-truncate {
+    @apply truncate max-w-[180px] sm:max-w-none sm:break-all;
+  }
+}
+
+/* ─── Noise Texture Overlay ─── */
+.noise-bg::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Grid Pattern Background ─── */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(220, 38, 38, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(220, 38, 38, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px; /* smaller on mobile */
+}
+@media (min-width: 640px) {
+  .grid-bg { background-size: 60px 60px; }
+}
+
+/* ─── Animated Score Bar ─── */
+.score-bar-fill {
+  transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ─── Shimmer Effect ─── */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* ─── Hero Gradient Mesh ─── */
+.hero-mesh {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(220, 38, 38, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(220, 38, 38, 0.04) 0%, transparent 50%);
+}
+
+/* ─── Intersection Observer reveal animations ─── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Modal Overlay ─── */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  /* Ensure modal is scrollable on small screens */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ─── Safe area insets (notch/home-bar on iOS) ─── */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ─── Prevent horizontal overflow from long hashes ─── */
+.font-mono {
+  word-break: break-all;
+}
+/* But NOT for ticker labels */
+.ticker-label {
+  word-break: normal;
+}
+
+/* ─── Tablet intermediate breakpoint helpers ─── */
+@media (min-width: 480px) and (max-width: 639px) {
+  .section-title { font-size: 1.75rem; }
+}
+
+/* ─── Fix iOS input zoom (font-size must be >= 16px) ─── */
+input[type="text"],
+input[type="email"],
+input[type="search"],
+textarea {
+  font-size: 16px !important;
+}
+/* But keep the display size from Tailwind on desktop */
+@media (min-width: 640px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="search"],
+  textarea {
+    font-size: inherit !important;
+  }
+}
