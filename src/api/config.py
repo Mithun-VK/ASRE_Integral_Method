@@ -67,7 +67,7 @@ class Settings:
     
     _cors_origins_str: str = os.getenv(
         "CORS_ORIGINS", 
-        "http://localhost:3000,http://localhost:5173, https://arkangel.co.in"
+        "http://localhost:3000,http://localhost:5173, https://asre.arkangel.co.in"
     )
     CORS_ORIGINS: List[str] = [origin.strip() for origin in _cors_origins_str.split(",")]
     """List of allowed CORS origins for React frontend."""
