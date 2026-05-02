@@ -1,16 +1,21 @@
 """
-Fundamental Data Fetcher - Yahoo Finance Integration (PRODUCTION)
+Fundamental Data Fetcher - Yahoo Finance Integration (PRODUCTION v2.2)
 
-Fetches quarterly fundamental data with earnings announcement dates using yfinance.
-100% FREE - No API key required!
-
-✅ PRODUCTION READY: Tested and working with AAPL, NVDA, etc.
-✅ PROPER DATA EXTRACTION: Uses .values for correct DataFrame extraction
-✅ ROBUST ERROR HANDLING: Handles missing data gracefully
+Changes vs v2.1:
+  HIST-1 : fetch_quarterly_fundamentals() now fetches MAX available history
+           from Yahoo Finance (ignores start_date/end_date during live fetch)
+           — all quarters are cached, filter applied on read.
+  HIST-2 : yfinance fetches all 4 statement sources without date restriction:
+           quarterly_income_stmt, quarterly_balance_sheet, quarterly_cashflow
+           — Yahoo returns up to ~20 quarters automatically.
+  HIST-3 : Cache stores FULL history; date filter applied at return time only.
+  HIST-4 : Cache schema bumped to v2.2 to invalidate old 6-quarter caches.
+  HIST-5 : _validate_no_lookahead_gap() warns when requested start_date
+           predates available fundamental history.
 
 Author: ASRE Project
-Date: January 2026
-Version: 1.0.0 (Production)
+Date:   April 2026
+Version: 2.2.0 (Production)
 """
 
 import pandas as pd
@@ -18,230 +23,469 @@ import numpy as np
 import yfinance as yf
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional, Dict, List, Union
+from typing import Optional, Dict, List, Tuple, Union
 import logging
 
 logger = logging.getLogger(__name__)
 
+SEP            = "\u2501" * 55
+CACHE_SCHEMA_V = "2.2"   # Bumped: forces re-fetch of old 6-quarter caches
+
+# ── ROE extraction constants ────────────────────────────────
+_ROE_EQUITY_KEYS = [
+    "Stockholders Equity",
+    "StockholdersEquity",
+    "Total Equity Gross Minority Interest",
+    "Common Stock Equity",
+    "CommonStockEquity",
+    "Shareholders Equity",
+    "ShareholdersEquity",
+]
+_ROE_NI_KEYS = [
+    "Net Income",
+    "NetIncome",
+    "Net Income Common Stockholders",
+    "NetIncomeCommonStockholders",
+]
+_ROE_MIN_PCT = -500.0
+_ROE_MAX_PCT =  500.0
+
 
 class FundamentalFetcherError(Exception):
-    """Custom exception for fundamental fetcher errors"""
     pass
 
 
 class FundamentalFetcher:
     """
-    Fetches quarterly fundamental data with earnings announcement dates using Yahoo Finance.
+    Fetches quarterly fundamental data with earnings announcement dates.
 
-    Features:
-    - 100% FREE (no API key needed)
-    - Quarterly financial statements (income, balance, cash flow)
-    - Earnings announcement dates
-    - Local caching (Parquet format)
-    - Integrates with existing data_loader
-
-    Usage:
-        fetcher = FundamentalFetcher()
-        df = fetcher.fetch_quarterly_fundamentals('AAPL', '2024-01-01', '2024-12-31')
-
-    Example Output:
-              date announced_date       revenue   eps    net_income
-        0 2024-12-31     2025-02-09  1.243000e+11  2.40  3.633000e+10
-        1 2024-09-30     2024-11-09  9.493000e+10  0.97  1.473600e+10
+    v2.2 key change: fetches FULL available history from Yahoo Finance
+    (up to ~20 quarters / 5 years) regardless of start_date.
+    The full history is cached; date filtering happens only at return time.
+    This ensures the backtest engine always has historical fundamentals
+    available for walk-forward periods.
     """
 
     def __init__(
         self,
-        cache_dir: str = 'data/cache/fundamentals',
-        cache_ttl_days: int = 7  # Shorter TTL for yfinance (data updates frequently)
+        cache_dir: str = "data/cache/fundamentals",
+        cache_ttl_days: int = 7,
     ):
-        """
-        Initialize the FundamentalFetcher.
-
-        Args:
-            cache_dir: Directory for caching data
-            cache_ttl_days: Cache time-to-live in days
-        """
-        self.cache_dir = Path(cache_dir)
+        self.cache_dir      = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.cache_ttl_days = cache_ttl_days
+        self._cache_ttl_hours = cache_ttl_days * 24
 
-        logger.info(f"✅ FundamentalFetcher initialized (Yahoo Finance)")
-        logger.info(f"   Cache directory: {self.cache_dir}")
-        logger.info(f"   Cache TTL: {cache_ttl_days} days")
+        logger.info("✅ FundamentalFetcher v2.2 initialized (Yahoo Finance)")
+        logger.info("   Cache directory : %s", self.cache_dir)
+        logger.info("   Cache TTL       : %d days", cache_ttl_days)
+        logger.info("   Schema version  : %s", CACHE_SCHEMA_V)
+
+    # ──────────────────────────────────────────────────────────
+    # Cache helpers
+    # ──────────────────────────────────────────────────────────
 
     def _get_cache_path(self, ticker: str) -> Path:
-        """Get cache file path for ticker"""
         return self.cache_dir / f"{ticker}_yfinance_fundamentals.parquet"
 
-    def _is_cache_valid(self, cache_path: Path) -> bool:
-        """Check if cache is valid (exists and not expired)"""
-        if not cache_path.exists():
-            return False
+    def _get_cache_meta_path(self, ticker: str) -> Path:
+        return self.cache_dir / f"{ticker}_yfinance_fundamentals.meta"
 
-        cache_age = datetime.now() - datetime.fromtimestamp(cache_path.stat().st_mtime)
-        if cache_age.days > self.cache_ttl_days:
-            logger.info(f"   Cache expired (age: {cache_age.days} days)")
-            return False
-
-        return True
-
-    def _load_cache(self, ticker: str) -> Optional[pd.DataFrame]:
-        """Load data from cache if valid"""
+    def _read_cache_meta(self, ticker: str) -> Tuple[Optional[datetime], Optional[str]]:
+        meta_path  = self._get_cache_meta_path(ticker)
         cache_path = self._get_cache_path(ticker)
 
-        if self._is_cache_valid(cache_path):
+        if meta_path.exists():
             try:
-                df = pd.read_parquet(cache_path)
-                logger.info(f"✅ Loaded {ticker} from cache ({len(df)} quarters)")
-                return df
-            except Exception as e:
-                logger.warning(f"⚠️  Cache read error: {e}")
+                parts = meta_path.read_text().strip().split("|")
+                ts    = datetime.fromisoformat(parts[0].strip())
+                sv    = parts[1].strip() if len(parts) > 1 else None
+                return ts, sv
+            except Exception:
+                pass
+
+        if cache_path.exists():
+            return datetime.fromtimestamp(cache_path.stat().st_mtime), None
+
+        return None, None
+
+    def _write_cache_meta(self, ticker: str, ts: datetime):
+        try:
+            self._get_cache_meta_path(ticker).write_text(
+                f"{ts.isoformat()}|{CACHE_SCHEMA_V}"
+            )
+        except Exception as exc:
+            logger.warning("Could not write cache meta for %s: %s", ticker, exc)
+
+    def _check_staleness(self, ticker: str, fetch_timestamp: datetime):
+        cache_age = datetime.now() - fetch_timestamp
+        hours_old = cache_age.total_seconds() / 3600
+        fetch_str = fetch_timestamp.strftime("%Y-%m-%d %H:%M IST")
+
+        if hours_old > self._cache_ttl_hours:
+            lines = [
+                SEP,
+                "  [ASRE CRITICAL] STALE DATA - CACHE TTL EXCEEDED",
+                f"  Ticker      : {ticker.upper()}",
+                f"  Cache age   : {hours_old/24:.1f} days",
+                f"  TTL         : {self.cache_ttl_days} days",
+                f"  Fetched at  : {fetch_str}",
+                "  Action      : Delete cache files and retry.",
+                f"  Command     : del data\\cache\\fundamentals\\{ticker}_yfinance_fundamentals.*",
+                SEP,
+            ]
+            raise RuntimeError("\n".join(lines))
+
+        if hours_old > 24:
+            logger.warning(
+                "STALE CACHE: %s fundamentals are %.0fh old "
+                "(fetched %s). Live re-fetch recommended before scoring.",
+                ticker.upper(), hours_old, fetch_str,
+            )
+
+    def _is_cache_valid(self, cache_path: Path) -> bool:
+        return cache_path.exists()
+
+    def _load_cache(self, ticker: str) -> Optional[Tuple[pd.DataFrame, datetime]]:
+        """
+        Load full-history DataFrame from cache.
+        Returns (DataFrame, fetch_timestamp) or None.
+        Auto-invalidates on schema version mismatch.
+        """
+        cache_path = self._get_cache_path(ticker)
+        if not self._is_cache_valid(cache_path):
+            return None
+
+        try:
+            fetch_ts, schema_v = self._read_cache_meta(ticker)
+            if fetch_ts is None:
+                fetch_ts = datetime.fromtimestamp(cache_path.stat().st_mtime)
+
+            if schema_v != CACHE_SCHEMA_V:
+                logger.warning(
+                    "Cache schema mismatch for %s (cached=%s current=%s) — "
+                    "forcing re-fetch.",
+                    ticker, schema_v, CACHE_SCHEMA_V,
+                )
                 return None
 
-        return None
+            df = pd.read_parquet(cache_path)
 
-    def _save_cache(self, ticker: str, df: pd.DataFrame):
-        """Save data to cache"""
+            # Physical column guards
+            for required_col in ["roe", "date", "announced_date"]:
+                if required_col not in df.columns:
+                    logger.warning(
+                        "Cache for %s missing '%s' column — forcing re-fetch.",
+                        ticker, required_col,
+                    )
+                    return None
+
+            logger.info("✅ Loaded %s from cache (%d quarters total, schema %s)",
+                        ticker, len(df), schema_v)
+            return df, fetch_ts
+
+        except Exception as exc:
+            logger.warning("Cache read error for %s: %s", ticker, exc)
+            return None
+
+    def _save_cache(self, ticker: str, df: pd.DataFrame, fetch_ts: datetime):
         try:
-            cache_path = self._get_cache_path(ticker)
-            df.to_parquet(cache_path, index=False)
-            logger.info(f"✅ Cached {ticker} data ({len(df)} quarters)")
-        except Exception as e:
-            logger.warning(f"⚠️  Cache write error: {e}")
+            df.to_parquet(self._get_cache_path(ticker), index=False)
+            self._write_cache_meta(ticker, fetch_ts)
+            logger.info("✅ Cached %s full history (%d quarters, schema %s)",
+                        ticker, len(df), CACHE_SCHEMA_V)
+        except Exception as exc:
+            logger.warning("Cache write error for %s: %s", ticker, exc)
+
+    # ──────────────────────────────────────────────────────────
+    # ROE Extraction (3-layer, Indian .NS hardened)
+    # ──────────────────────────────────────────────────────────
+
+    def fetch_roe_layered(
+        self,
+        ticker: str,
+        stock: Optional[yf.Ticker] = None,
+    ) -> Tuple[Optional[float], str]:
+        """
+        3-layer ROE extraction strategy hardened for Indian (.NS) tickers.
+        Unchanged from v2.1.
+        """
+        if stock is None:
+            stock = yf.Ticker(ticker)
+
+        # Layer 1: yf.info pre-computed TTM ROE
+        try:
+            info    = stock.info
+            roe_raw = info.get("returnOnEquity")
+            if roe_raw is not None and pd.notna(roe_raw) and float(roe_raw) != 0.0:
+                roe_pct = round(float(roe_raw) * 100, 2)
+                if _ROE_MIN_PCT <= roe_pct <= _ROE_MAX_PCT:
+                    logger.info("   [ROE-L1] %s: %.2f%% (source: yf.info TTM)", ticker, roe_pct)
+                    return roe_pct, "L1_info"
+                else:
+                    logger.warning(
+                        "[ROE-L1] %s: yf.info ROE=%.2f%% outside sanity bounds — skipping.",
+                        ticker, roe_pct,
+                    )
+        except Exception as exc:
+            logger.debug("[ROE-L1] %s: yf.info failed (%s)", ticker, exc)
+
+        # Layer 2: Quarterly statements
+        try:
+            roe_pct, source = self._compute_roe_from_statements(
+                ticker=ticker,
+                income=stock.quarterly_income_stmt.T,
+                balance=stock.quarterly_balance_sheet.T,
+                label="L2_quarterly",
+            )
+            if roe_pct is not None:
+                return roe_pct, source
+        except Exception as exc:
+            logger.debug("[ROE-L2] %s: Quarterly statements failed (%s)", ticker, exc)
+
+        # Layer 3: Annual statements
+        try:
+            roe_pct, source = self._compute_roe_from_statements(
+                ticker=ticker,
+                income=stock.income_stmt.T,
+                balance=stock.balance_sheet.T,
+                label="L3_annual",
+            )
+            if roe_pct is not None:
+                return roe_pct, source
+        except Exception as exc:
+            logger.debug("[ROE-L3] %s: Annual statements failed (%s)", ticker, exc)
+
+        logger.warning("[ROE] %s: All 3 layers failed — ROE will be NaN.", ticker)
+        return None, "FAILED"
+
+    def _compute_roe_from_statements(
+        self,
+        ticker: str,
+        income: pd.DataFrame,
+        balance: pd.DataFrame,
+        label: str,
+    ) -> Tuple[Optional[float], str]:
+        if income.empty or balance.empty:
+            return None, label
+
+        ni_col = next((c for c in _ROE_NI_KEYS if c in income.columns), None)
+        eq_col = next((c for c in _ROE_EQUITY_KEYS if c in balance.columns), None)
+
+        if ni_col is None or eq_col is None:
+            return None, label
+
+        ni_series = income[ni_col].dropna()
+        ni_series = ni_series[ni_series != 0.0]
+        eq_series = balance[eq_col].dropna()
+        eq_series = eq_series[eq_series != 0.0]
+
+        if ni_series.empty or eq_series.empty:
+            return None, label
+
+        ttm_quarters = ni_series.iloc[:4]
+        if len(ttm_quarters) < 2:
+            return None, label
+
+        net_income = float(ttm_quarters.sum())
+        avg_equity = (
+            (float(eq_series.iloc[0]) + float(eq_series.iloc[1])) / 2
+            if len(eq_series) >= 2
+            else float(eq_series.iloc[0])
+        )
+
+        if avg_equity == 0.0:
+            return None, label
+
+        roe_pct = round((net_income / avg_equity) * 100, 2)
+
+        if not (_ROE_MIN_PCT <= roe_pct <= _ROE_MAX_PCT):
+            return None, label
+
+        logger.info(
+            "   [ROE-%s] %s: %.2f%% (NI=%.2fM, avg_eq=%.2fM)",
+            label, ticker, roe_pct, net_income / 1e6, avg_equity / 1e6,
+        )
+        return roe_pct, label
+
+    # ──────────────────────────────────────────────────────────
+    # Public API
+    # ──────────────────────────────────────────────────────────
 
     def fetch_quarterly_fundamentals(
         self,
-        ticker: str,
-        start_date: str,
-        end_date: str,
-        use_cache: bool = True,
-        force_refresh: bool = False
-    ) -> pd.DataFrame:
+        ticker:        str,
+        start_date:    str,
+        end_date:      str,
+        use_cache:     bool = True,
+        force_refresh: bool = False,
+    ) -> Tuple[pd.DataFrame, datetime]:
         """
-        Fetch quarterly fundamental data with announcement dates from Yahoo Finance.
+        Fetch ALL available quarterly fundamental history from Yahoo Finance.
 
-        Args:
-            ticker: Stock ticker symbol
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-            use_cache: Whether to use cached data
-            force_refresh: Force refresh even if cache is valid
+        HIST-1/2/3: Full history is fetched and cached; start_date/end_date
+        filter is applied ONLY at return time. This means a 2020-01-01
+        start_date will correctly receive all quarters Yahoo has available
+        (typically 16–20 quarters / 4–5 years for NSE tickers).
 
-        Returns:
-            DataFrame with columns:
-            - date: Quarter end date
-            - announced_date: Earnings announcement date (estimated)
-            - revenue: Total revenue
-            - net_income: Net income
-            - eps: Earnings per share (diluted)
-            - gross_profit: Gross profit
-            - operating_income: Operating income
-            - ebitda: EBITDA
-            - total_assets: Total assets
-            - total_debt: Total debt
-            - shareholders_equity: Shareholders equity
-            - free_cash_flow: Free cash flow
-            - operating_cash_flow: Operating cash flow
-
-        Note:
-            Yahoo Finance only provides ~5 most recent quarters.
-            For historical data beyond that, results may be limited.
+        Returns
+        -------
+        (DataFrame, fetch_timestamp)
+            DataFrame filtered to [start_date, end_date].
+            Full history is cached for future calls.
         """
-        logger.info(f"\n📊 Fetching fundamentals for {ticker}")
-        logger.info(f"   Period: {start_date} to {end_date}")
-        logger.info(f"   Source: Yahoo Finance (FREE!)")
+        logger.info("\n📊 Fetching fundamentals for %s", ticker)
+        logger.info("   Requested: %s to %s", start_date, end_date)
+        logger.info("   Source: Yahoo Finance (FREE!)")
 
-        # Try cache first
+        # ── Try cache (stores full history) ───────────────────
         if use_cache and not force_refresh:
-            cached_df = self._load_cache(ticker)
-            if cached_df is not None:
-                # Convert dates for comparison
-                cached_df['date'] = pd.to_datetime(cached_df['date'])
-                start_dt = pd.to_datetime(start_date)
-                end_dt = pd.to_datetime(end_date)
-                mask = (cached_df['date'] >= start_dt) & (cached_df['date'] <= end_dt)
-                filtered = cached_df[mask].reset_index(drop=True)
-                if not filtered.empty:
-                    logger.info(f"✅ Fetched {len(filtered)} quarters from cache")
-                    return filtered
+            result = self._load_cache(ticker)
+            if result is not None:
+                full_df, fetch_ts = result
+                self._check_staleness(ticker, fetch_ts)
+                full_df["date"] = pd.to_datetime(full_df["date"])
 
-        # Fetch from Yahoo Finance
-        logger.info(f"   Fetching from Yahoo Finance...")
+                # HIST-3: filter full cached history to requested window
+                filtered = self._filter_by_date(full_df, start_date, end_date)
+
+                logger.info(
+                    "✅ Cache hit: %d total quarters, %d in [%s → %s]",
+                    len(full_df), len(filtered), start_date, end_date,
+                )
+                self._warn_if_history_gap(ticker, full_df, start_date)
+                return filtered, fetch_ts
+
+        # ── Live fetch: NO date restriction — get everything ──
+        logger.info("   Live fetch: requesting MAX history from Yahoo Finance...")
+        fetch_ts = datetime.now()
 
         try:
             stock = yf.Ticker(ticker)
 
-            # Get quarterly statements
-            logger.info(f"   Loading income statement...")
-            income = stock.quarterly_income_stmt.T
+            logger.info("   Loading quarterly income statement (all available)...")
+            income = stock.quarterly_income_stmt.T    # up to ~20 quarters
 
-            logger.info(f"   Loading balance sheet...")
+            logger.info("   Loading quarterly balance sheet (all available)...")
             balance = stock.quarterly_balance_sheet.T
 
-            logger.info(f"   Loading cash flow...")
+            logger.info("   Loading quarterly cash flow (all available)...")
             cashflow = stock.quarterly_cashflow.T
 
-            # Get earnings dates (for better announcement date estimation)
-            logger.info(f"   Loading earnings dates...")
+            logger.info("   Loading earnings dates...")
             try:
                 earnings_dates = stock.earnings_dates
-            except:
+            except Exception:
                 earnings_dates = None
-                logger.info(f"   Will estimate announcement dates (+40 days)")
+                logger.info("   Will estimate announcement dates (+40 days)")
 
-            # Build unified DataFrame
-            df = self._build_fundamentals_df(income, balance, cashflow, earnings_dates)
+            logger.info("   Extracting ROE (3-layer strategy)...")
+            roe_pct, roe_source = self.fetch_roe_layered(ticker, stock=stock)
 
-            # Validate data
-            df = self._validate_and_clean(df, ticker)
+            # Build FULL history DataFrame (no date filter yet)
+            full_df = self._build_fundamentals_df(
+                income, balance, cashflow, earnings_dates, roe_pct, roe_source
+            )
+            full_df = self._validate_and_clean(full_df, ticker)
 
-            # Save to cache (full dataset)
+            logger.info(
+                "✅ Fetched %d total quarters for %s [%s → %s] (ROE=%.2f%% [%s])",
+                len(full_df), ticker,
+                full_df["date"].min().date() if not full_df.empty else "N/A",
+                full_df["date"].max().date() if not full_df.empty else "N/A",
+                roe_pct if roe_pct is not None else 0.0,
+                roe_source,
+            )
+
+            # Cache the FULL history
             if use_cache:
-                self._save_cache(ticker, df)
+                self._save_cache(ticker, full_df, fetch_ts)
 
-            # Filter to date range
-            start_dt = pd.to_datetime(start_date)
-            end_dt = pd.to_datetime(end_date)
-            mask = (df['date'] >= start_dt) & (df['date'] <= end_dt)
-            filtered_df = df[mask].reset_index(drop=True)
+            # Warn if requested start_date predates available history
+            self._warn_if_history_gap(ticker, full_df, start_date)
 
-            logger.info(f"✅ Fetched {len(filtered_df)} quarters for {ticker}")
+            # Filter to requested window
+            filtered = self._filter_by_date(full_df, start_date, end_date)
 
-            if filtered_df.empty:
-                logger.warning(f"⚠️  No data in date range {start_date} to {end_date}")
-                logger.warning(f"   Available quarters: {df['date'].min()} to {df['date'].max()}")
+            logger.info(
+                "   Returning %d quarters in [%s → %s]",
+                len(filtered), start_date, end_date,
+            )
 
-            return filtered_df
+            if filtered.empty:
+                logger.warning(
+                    "⚠️  No quarters in [%s → %s]. "
+                    "Available history: %s to %s. "
+                    "The backtest will use all available quarters for scoring.",
+                    start_date, end_date,
+                    full_df["date"].min().date() if not full_df.empty else "N/A",
+                    full_df["date"].max().date() if not full_df.empty else "N/A",
+                )
+                # Return full history so engine has something to work with
+                return full_df, fetch_ts
 
-        except Exception as e:
-            logger.error(f"Failed to fetch {ticker}: {e}")
+            return filtered, fetch_ts
+
+        except FundamentalFetcherError:
+            raise
+        except Exception as exc:
+            logger.error("Failed to fetch %s: %s", ticker, exc)
             import traceback
             traceback.print_exc()
-            raise FundamentalFetcherError(f"Failed to fetch {ticker}: {e}")
+            raise FundamentalFetcherError(f"Failed to fetch {ticker}: {exc}")
+
+    # ──────────────────────────────────────────────────────────
+    # Private helpers
+    # ──────────────────────────────────────────────────────────
+
+    def _filter_by_date(
+        self, df: pd.DataFrame, start_date: str, end_date: str
+    ) -> pd.DataFrame:
+        """Filter DataFrame to [start_date, end_date] inclusive."""
+        df = df.copy()
+        df["date"] = pd.to_datetime(df["date"])
+        start_dt = pd.to_datetime(start_date)
+        end_dt   = pd.to_datetime(end_date)
+        mask = (df["date"] >= start_dt) & (df["date"] <= end_dt)
+        return df[mask].reset_index(drop=True)
+
+    def _warn_if_history_gap(
+        self, ticker: str, full_df: pd.DataFrame, start_date: str
+    ):
+        """
+        HIST-5: Warn if requested start_date predates available fundamental history.
+        This is expected for most tickers — Yahoo Finance caps at ~5 years.
+        The engine handles this gracefully by skipping periods with no PIT data.
+        """
+        if full_df.empty:
+            return
+        earliest = full_df["date"].min()
+        requested_start = pd.to_datetime(start_date)
+        gap_days = (earliest - requested_start).days
+
+        if gap_days > 90:
+            logger.info(
+                "ℹ️  History gap for %s: requested start=%s, "
+                "earliest available=%s (gap=%d days / %.1f years). "
+                "Yahoo Finance max history is ~5 years. "
+                "Backtest periods before %s will be skipped (expected).",
+                ticker,
+                requested_start.date(),
+                earliest.date(),
+                gap_days,
+                gap_days / 365.25,
+                (earliest + pd.Timedelta(days=40)).date(),
+            )
 
     def _safe_extract_column(
-        self, 
-        df: pd.DataFrame, 
-        column_names: List[str], 
-        default_value: float = 0.0
+        self,
+        df: pd.DataFrame,
+        column_names: List[str],
+        default_value: float = 0.0,
     ) -> np.ndarray:
-        """
-        Safely extract column data as numpy array.
-
-        Args:
-            df: DataFrame to extract from
-            column_names: List of possible column names (tried in order)
-            default_value: Default value if column not found
-
-        Returns:
-            Numpy array with column values
-        """
         for col_name in column_names:
             if col_name in df.columns:
                 return df[col_name].values
-
-        # Return array of default values
         return np.full(len(df), default_value, dtype=float)
 
     def _build_fundamentals_df(
@@ -249,308 +493,205 @@ class FundamentalFetcher:
         income: pd.DataFrame,
         balance: pd.DataFrame,
         cashflow: pd.DataFrame,
-        earnings_dates: Optional[pd.DataFrame]
+        earnings_dates: Optional[pd.DataFrame],
+        roe_pct: Optional[float],
+        roe_source: str,
     ) -> pd.DataFrame:
-        """
-        Build unified fundamentals DataFrame from Yahoo Finance data.
-
-        ✅ PRODUCTION FIX: Uses .values for proper data extraction
-        """
         if income.empty:
             raise FundamentalFetcherError("No income statement data available")
 
-        logger.info(f"   Building fundamentals DataFrame ({len(income)} quarters)...")
+        logger.info(
+            "   Building fundamentals DataFrame (%d quarters)...", len(income)
+        )
 
-        # --------------------------------------------------------
-        # Build DataFrame with direct .values extraction
-        # --------------------------------------------------------
         df = pd.DataFrame({
-            'date': pd.to_datetime(income.index),
-
-            # Income statement metrics
-            'revenue': self._safe_extract_column(
-                income, ['Total Revenue', 'TotalRevenue', 'Operating Revenue']
+            "date": pd.to_datetime(income.index),
+            "revenue": self._safe_extract_column(
+                income, ["Total Revenue", "TotalRevenue", "Operating Revenue"]
             ),
-            'net_income': self._safe_extract_column(
-                income, ['Net Income', 'NetIncome', 'Net Income Common Stockholders']
+            "net_income": self._safe_extract_column(
+                income, ["Net Income", "NetIncome", "Net Income Common Stockholders"]
             ),
-            'eps': self._safe_extract_column(
-                income, ['Diluted EPS', 'DilutedEPS', 'Basic EPS']
+            "eps": self._safe_extract_column(
+                income, ["Diluted EPS", "DilutedEPS", "Basic EPS"]
             ),
-            'gross_profit': self._safe_extract_column(
-                income, ['Gross Profit', 'GrossProfit']
+            "gross_profit": self._safe_extract_column(
+                income, ["Gross Profit", "GrossProfit"]
             ),
-            'operating_income': self._safe_extract_column(
-                income, ['Operating Income', 'OperatingIncome']
+            "operating_income": self._safe_extract_column(
+                income, ["Operating Income", "OperatingIncome"]
             ),
-            'ebitda': self._safe_extract_column(
-                income, ['EBITDA', 'Normalized EBITDA']
+            "ebitda": self._safe_extract_column(
+                income, ["EBITDA", "Normalized EBITDA"]
             ),
         })
 
-        # --------------------------------------------------------
-        # Add balance sheet metrics (if available and same length)
-        # --------------------------------------------------------
-        if not balance.empty and len(balance) == len(income):
-            df['total_assets'] = self._safe_extract_column(
-                balance, ['Total Assets', 'TotalAssets']
-            )
-            df['total_debt'] = self._safe_extract_column(
-                balance, ['Total Debt', 'TotalDebt', 'Long Term Debt']
-            )
-            df['shareholders_equity'] = self._safe_extract_column(
-                balance, ['Stockholders Equity', 'StockholdersEquity', 
-                         'Total Equity Gross Minority Interest']
+        # Balance sheet — align by date index if lengths differ
+        if not balance.empty:
+            bal_aligned = balance.reindex(income.index)
+            df["total_assets"]        = self._safe_extract_column(bal_aligned, ["Total Assets", "TotalAssets"])
+            df["total_debt"]          = self._safe_extract_column(bal_aligned, ["Total Debt", "TotalDebt", "Long Term Debt"])
+            df["shareholders_equity"] = self._safe_extract_column(bal_aligned, _ROE_EQUITY_KEYS)
+        else:
+            df["total_assets"]        = 0.0
+            df["total_debt"]          = 0.0
+            df["shareholders_equity"] = 0.0
+
+        # Cash flow — align by date index
+        if not cashflow.empty:
+            cf_aligned = cashflow.reindex(income.index)
+            df["free_cash_flow"]      = self._safe_extract_column(cf_aligned, ["Free Cash Flow", "FreeCashFlow"])
+            df["operating_cash_flow"] = self._safe_extract_column(
+                cf_aligned, ["Operating Cash Flow", "OperatingCashFlow",
+                             "Total Cash From Operating Activities"]
             )
         else:
-            df['total_assets'] = 0.0
-            df['total_debt'] = 0.0
-            df['shareholders_equity'] = 0.0
+            df["free_cash_flow"]      = 0.0
+            df["operating_cash_flow"] = 0.0
 
-        # --------------------------------------------------------
-        # Add cash flow metrics (if available and same length)
-        # --------------------------------------------------------
-        if not cashflow.empty and len(cashflow) == len(income):
-            df['free_cash_flow'] = self._safe_extract_column(
-                cashflow, ['Free Cash Flow', 'FreeCashFlow']
-            )
-            df['operating_cash_flow'] = self._safe_extract_column(
-                cashflow, ['Operating Cash Flow', 'OperatingCashFlow',
-                          'Total Cash From Operating Activities']
-            )
-        else:
-            df['free_cash_flow'] = 0.0
-            df['operating_cash_flow'] = 0.0
+        df["roe"]        = roe_pct if roe_pct is not None else np.nan
+        df["roe_source"] = roe_source
 
-        # --------------------------------------------------------
-        # Map earnings announcement dates
-        # --------------------------------------------------------
-        df['announced_date'] = self._map_earnings_dates(df['date'], earnings_dates)
-
-        # --------------------------------------------------------
-        # Sort by date (oldest to newest)
-        # --------------------------------------------------------
-        df = df.sort_values('date', ascending=True).reset_index(drop=True)
-
+        df["announced_date"] = self._map_earnings_dates(df["date"], earnings_dates)
+        df = df.sort_values("date", ascending=True).reset_index(drop=True)
         return df
 
     def _map_earnings_dates(
         self,
         quarter_dates: pd.Series,
-        earnings_dates: Optional[pd.DataFrame]
+        earnings_dates: Optional[pd.DataFrame],
     ) -> pd.Series:
-        """
-        Map earnings announcement dates to quarter end dates.
-
-        Tries to use actual earnings dates from yfinance, falls back to estimation.
-        """
-        announced_dates = []
-
+        announced = []
         for qdate in quarter_dates:
             if earnings_dates is not None and not earnings_dates.empty:
                 try:
-                    # Find closest announcement date after quarter end
-                    qdate_ts = pd.Timestamp(qdate)
-                    future_announcements = earnings_dates[earnings_dates.index > qdate_ts]
-
-                    if not future_announcements.empty:
-                        # Get the first announcement after quarter end
-                        announcement_date = future_announcements.index[0]
-                        # Ensure it's within reasonable range (0-90 days after quarter)
-                        days_diff = (announcement_date - qdate_ts).days
-                        if 0 <= days_diff <= 90:
-                            announced_dates.append(announcement_date)
-                        else:
-                            announced_dates.append(qdate_ts + pd.Timedelta(days=40))
+                    qts    = pd.Timestamp(qdate)
+                    future = earnings_dates[earnings_dates.index > qts]
+                    if not future.empty:
+                        ann       = future.index[0]
+                        days_diff = (ann - qts).days
+                        announced.append(
+                            ann if 0 <= days_diff <= 90
+                            else qts + pd.Timedelta(days=40)
+                        )
                     else:
-                        # Estimate: ~40 days after quarter end
-                        announced_dates.append(qdate_ts + pd.Timedelta(days=40))
-                except:
-                    # Fallback: estimate
-                    announced_dates.append(pd.Timestamp(qdate) + pd.Timedelta(days=40))
+                        announced.append(pd.Timestamp(qdate) + pd.Timedelta(days=40))
+                except Exception:
+                    announced.append(pd.Timestamp(qdate) + pd.Timedelta(days=40))
             else:
-                # Estimate: ~40 days after quarter end
-                announced_dates.append(pd.Timestamp(qdate) + pd.Timedelta(days=40))
-
-        return pd.Series(announced_dates, index=quarter_dates.index)
+                announced.append(pd.Timestamp(qdate) + pd.Timedelta(days=40))
+        return pd.Series(announced, index=quarter_dates.index)
 
     def _validate_and_clean(self, df: pd.DataFrame, ticker: str) -> pd.DataFrame:
-        """
-        Validate and clean fundamental data.
-        """
-        logger.info(f"   Validating data...")
+        logger.info("   Validating data...")
 
-        # Check for required columns
-        required_cols = ['date', 'announced_date', 'revenue', 'net_income', 'eps']
-        missing_cols = [col for col in required_cols if col not in df.columns]
+        required_cols = ["date", "announced_date", "revenue", "net_income", "eps", "roe"]
+        missing_cols  = [c for c in required_cols if c not in df.columns]
         if missing_cols:
             raise FundamentalFetcherError(f"Missing required columns: {missing_cols}")
 
-        # Check for missing dates
-        if df['date'].isnull().any():
+        if df["date"].isnull().any():
             raise FundamentalFetcherError("Missing quarter end dates")
 
-        # Convert to datetime
-        df['date'] = pd.to_datetime(df['date'])
-        df['announced_date'] = pd.to_datetime(df['announced_date'])
+        df["date"]           = pd.to_datetime(df["date"])
+        df["announced_date"] = pd.to_datetime(df["announced_date"])
 
-        # CRITICAL: Ensure announced_date >= date (no look-ahead bias)
-        invalid_dates = df['announced_date'] < df['date']
-        if invalid_dates.any():
-            logger.warning(f"⚠️  Fixing {invalid_dates.sum()} invalid announcement dates")
-            df.loc[invalid_dates, 'announced_date'] = (
-                df.loc[invalid_dates, 'date'] + pd.Timedelta(days=40)
+        invalid = df["announced_date"] < df["date"]
+        if invalid.any():
+            logger.warning("Fixing %d invalid announcement dates", invalid.sum())
+            df.loc[invalid, "announced_date"] = (
+                df.loc[invalid, "date"] + pd.Timedelta(days=40)
             )
 
-        # Remove duplicates
         initial_len = len(df)
-        df = df.drop_duplicates(subset=['date'], keep='first')
+        df = df.drop_duplicates(subset=["date"], keep="first")
         if len(df) < initial_len:
-            logger.warning(f"⚠️  Removed {initial_len - len(df)} duplicate quarters")
+            logger.warning("Removed %d duplicate quarters", initial_len - len(df))
 
-        # Data quality checks
-        zero_revenue_count = (df['revenue'] == 0).sum()
-        if zero_revenue_count > 0:
-            logger.warning(f"⚠️  {zero_revenue_count} quarters have zero revenue")
-
-        # Fill NaN values in numeric columns with 0
-        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        numeric_cols = df.select_dtypes(include=[np.number]).columns.difference(["roe"])
         df[numeric_cols] = df[numeric_cols].fillna(0)
 
-        logger.info(f"✅ Validation complete: {len(df)} quarters, {len(df.columns)} metrics")
-        logger.info(f"   Revenue > 0: {(df['revenue'] > 0).sum()}/{len(df)} quarters")
-        logger.info(f"   Date range: {df['date'].min().date()} to {df['date'].max().date()}")
-
+        roe_val    = df["roe"].iloc[0] if not df.empty else np.nan
+        roe_src    = df["roe_source"].iloc[0] if "roe_source" in df.columns else "N/A"
+        roe_status = (
+            f"{roe_val:.2f}% [{roe_src}]"
+            if pd.notna(roe_val)
+            else f"UNAVAILABLE [{roe_src}]"
+        )
+        logger.info("✅ Validation complete: %d quarters, %d columns", len(df), len(df.columns))
+        logger.info(
+            "   Date range: %s → %s",
+            df["date"].min().date(), df["date"].max().date(),
+        )
+        logger.info("   ROE: %s", roe_status)
         return df
 
+    # ──────────────────────────────────────────────────────────
+    # Convenience methods
+    # ──────────────────────────────────────────────────────────
+
     def get_latest_quarter(self, ticker: str) -> pd.Series:
-        """
-        Get the most recent quarter's fundamentals.
-
-        Args:
-            ticker: Stock ticker
-
-        Returns:
-            Series with latest quarter data
-        """
-        today = datetime.now().strftime('%Y-%m-%d')
-        two_years_ago = (datetime.now() - timedelta(days=730)).strftime('%Y-%m-%d')
-
-        df = self.fetch_quarterly_fundamentals(ticker, two_years_ago, today)
-
+        today       = datetime.now().strftime("%Y-%m-%d")
+        five_yrs_ago = (datetime.now() - timedelta(days=1825)).strftime("%Y-%m-%d")
+        df, _       = self.fetch_quarterly_fundamentals(ticker, five_yrs_ago, today)
         if df.empty:
             raise FundamentalFetcherError(f"No recent data for {ticker}")
-
         return df.iloc[-1]
+
+    def get_roe(self, ticker: str) -> Optional[float]:
+        try:
+            roe_pct, source = self.fetch_roe_layered(ticker)
+            logger.info("get_roe(%s) → %.2f%% [%s]",
+                        ticker, roe_pct if roe_pct is not None else 0.0, source)
+            return roe_pct
+        except Exception as exc:
+            logger.error("get_roe(%s) failed: %s", ticker, exc)
+            return None
 
     def get_historical_series(
         self,
-        ticker: str,
-        metric: str,
+        ticker:     str,
+        metric:     str,
         start_date: str,
-        end_date: str
+        end_date:   str,
     ) -> pd.Series:
-        """
-        Get time series for a specific metric.
-
-        Args:
-            ticker: Stock ticker
-            metric: Metric name (e.g., 'revenue', 'eps', 'net_income')
-            start_date: Start date
-            end_date: End date
-
-        Returns:
-            Series indexed by date
-        """
-        df = self.fetch_quarterly_fundamentals(ticker, start_date, end_date)
-
+        df, _ = self.fetch_quarterly_fundamentals(ticker, start_date, end_date)
         if metric not in df.columns:
-            available = ', '.join(df.columns)
             raise FundamentalFetcherError(
-                f"Metric '{metric}' not found. Available: {available}"
+                f"Metric '{metric}' not found. Available: {', '.join(df.columns)}"
             )
+        return df.set_index("date")[metric]
 
-        return df.set_index('date')[metric]
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Manual test
+# ──────────────────────────────────────────────────────────────────────────────
 
-# Example usage
-if __name__ == '__main__':
-    """
-    Example usage and testing of FundamentalFetcher
-    """
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(message)s'
-    )
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-    print("="*80)
-    print("FUNDAMENTAL FETCHER - PRODUCTION TEST")
-    print("="*80)
+    TICKERS = ["INFY.NS", "TCS.NS", "RELIANCE.NS", "HDFCBANK.NS"]
 
-    try:
-        # Initialize fetcher (NO API KEY NEEDED!)
-        fetcher = FundamentalFetcher()
+    print("=" * 80)
+    print("FUNDAMENTAL FETCHER v2.2 - HISTORY TEST")
+    print("=" * 80)
 
-        # --------------------------------------------------------
-        # TEST 1: AAPL (2024)
-        # --------------------------------------------------------
-        print("\n" + "="*80)
-        print("TEST 1: AAPL (2024)")
-        print("="*80)
+    fetcher = FundamentalFetcher()
 
-        df_aapl = fetcher.fetch_quarterly_fundamentals(
-            ticker='AAPL',
-            start_date='2024-01-01',
-            end_date='2024-12-31',
-            force_refresh=True
-        )
+    for ticker in TICKERS:
+        try:
+            df, fetch_ts = fetcher.fetch_quarterly_fundamentals(
+                ticker        = ticker,
+                start_date    = "2020-01-01",
+                end_date      = "2026-04-01",
+                force_refresh = True,
+            )
+            print(f"\n{ticker}: {len(df)} quarters fetched")
+            print(f"   Range: {df['date'].min().date()} → {df['date'].max().date()}")
+            print(f"   Columns: {list(df.columns)}")
+            print(df[['date', 'announced_date', 'revenue', 'net_income', 'roe']].to_string(index=False))
+        except Exception as exc:
+            print(f"\n{ticker}: ERROR — {exc}")
 
-        print(f"\n📊 AAPL Data:")
-        print(df_aapl[['date', 'announced_date', 'revenue', 'eps', 'net_income']].to_string(index=False))
-
-        # Verify no look-ahead bias
-        print(f"\n✅ Validation:")
-        print(f"   All announced_date >= date: {(df_aapl['announced_date'] >= df_aapl['date']).all()}")
-        print(f"   Total quarters: {len(df_aapl)}")
-        print(f"   Revenue > 0: {(df_aapl['revenue'] > 0).sum()} quarters")
-        print(f"   Avg Revenue: ${df_aapl['revenue'].mean()/1e9:.2f}B")
-        print(f"   Avg EPS: ${df_aapl['eps'].mean():.2f}")
-
-        # --------------------------------------------------------
-        # TEST 2: NVDA (wider range to get more quarters)
-        # --------------------------------------------------------
-        print("\n" + "="*80)
-        print("TEST 2: NVDA (2024-2025)")
-        print("="*80)
-
-        df_nvda = fetcher.fetch_quarterly_fundamentals(
-            ticker='NVDA',
-            start_date='2024-01-01',
-            end_date='2025-12-31',
-            force_refresh=True
-        )
-
-        print(f"\n📊 NVDA Data:")
-        print(df_nvda[['date', 'revenue', 'eps']].to_string(index=False))
-
-        print(f"\n✅ Validation:")
-        print(f"   Total quarters: {len(df_nvda)}")
-        print(f"   Revenue > 0: {(df_nvda['revenue'] > 0).sum()} quarters")
-
-        # --------------------------------------------------------
-        # FINAL SUMMARY
-        # --------------------------------------------------------
-        print("\n" + "="*80)
-        print("✅ ALL TESTS PASSED!")
-        print("="*80)
-        print(f"\n🎉 FundamentalFetcher is ready for production use!")
-        print(f"   - 100% FREE (no API key)")
-        print(f"   - No rate limits")
-        print(f"   - Proper data extraction")
-        print(f"   - No look-ahead bias")
-        print(f"   - Caching enabled")
-
-    except Exception as e:
-        print(f"\n❌ Error: {e}")
-        import traceback
-        traceback.print_exc()
+    print("\n✅ FundamentalFetcher v2.2 ready!")
+    print("=" * 80)

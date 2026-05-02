@@ -36,9 +36,6 @@ from .backtest import Backtester
 # Data loading
 from .data_loader import load_stock_data, DataLoader
 
-# Optimization
-from .optimization import ASREOptimizer
-
 __all__ = [
     # Version
     '__version__',
@@ -62,7 +59,6 @@ __all__ = [
     # Classes
     'Backtester',
     'DataLoader',
-    'ASREOptimizer',
     
     # Convenience
     'load_stock_data',

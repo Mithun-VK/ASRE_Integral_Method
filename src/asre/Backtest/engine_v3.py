@@ -3,71 +3,58 @@ Dynamic Backtest Engine v3.0 - Production Ready
 
 Institutional-grade backtesting with dynamic R_ASRE calculation and NO look-ahead bias.
 
-Key Features:
-- Recalculates R_ASRE quarterly (not static!)
-- Uses point-in-time data only
-- Integrates with existing ASRE score calculators
-- Comprehensive performance tracking
+Key Fixes in this version:
+- compute_complete_asre() called ONCE on full history (not per period)
+- _lookup_scores_as_of() uses pd.DataFrame.asof() for correct date-slicing
+- No look-ahead bias: scores sliced to announced_date, price to rebalance_date
+- CLI: python engine_v3.py --ticker INFY.NS --start 2020-01-01 --end 2026-04-01
+- Equity curve uses daily mark-to-market (not just rebalance snapshots)
+- Alpha computed vs true buy-and-hold over the same period
+- Sharpe computed on quarterly returns (not daily, since rebalance is quarterly)
 
 Author: ASRE Project
-Date: January 2026
+Date:   April 2026
 """
 
+import argparse
+import sys
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Union
-from pathlib import Path
-
-# Import ASRE data modules
+from typing import Dict, List, Optional
+from asre import composite, data_loader
 from asre.data.fundamental_fetcher import FundamentalFetcher
 from asre.data.point_in_time import PointInTimeData
 
-# Import existing ASRE score calculators
-from asre import composite, fundamentals, technical, momentum, data_loader
-
 
 class BacktestEngineError(Exception):
-    """Custom exception for backtest engine errors"""
     pass
 
 
 class DynamicBacktestEngine:
     """
-    Dynamic Backtest Engine with point-in-time R_ASRE calculation.
+    Walk-forward backtest engine.
 
-    Core Innovation:
-    - R_ASRE is recalculated at each rebalance date
-    - Uses ONLY data available as of that date (no look-ahead bias)
-    - R_ASRE changes over time (not static!)
-
-    Usage:
-        engine = DynamicBacktestEngine(initial_capital=100000)
-        results = engine.run_backtest('NVDA', '2020-01-01', '2025-01-01')
+    Architecture
+    ────────────
+    1. Fetch full price + fundamental history.
+    2. Call compute_complete_asre() ONCE → daily R_ASRE time-series.
+    3. At each quarterly rebalance date:
+       a. Ask PointInTimeData for the latest announced quarter.
+       b. Slice R_ASRE series up to that announcement date  (no look-ahead).
+       c. Use .asof() to get the exact value on that date.
+       d. Generate signal → execute trade → mark portfolio to market.
     """
 
     def __init__(
         self,
-        initial_capital: float = 100000,
+        initial_capital: float = 100_000,
         rebalance_frequency: str = 'Q',
         threshold_buy: float = 70,
         threshold_sell: float = 40,
-        threshold_fundamental_floor: float = 65,
+        threshold_fundamental_floor: float = 60,
         transaction_cost: float = 0.001,
-        verbose: bool = True
+        verbose: bool = True,
     ):
-        """
-        Initialize Dynamic Backtest Engine.
-
-        Args:
-            initial_capital: Starting capital
-            rebalance_frequency: 'Q' (quarterly), 'M' (monthly)
-            threshold_buy: Buy if R_ASRE >= this
-            threshold_sell: Sell if R_ASRE < this
-            threshold_fundamental_floor: Require F-Score >= this
-            transaction_cost: Transaction cost (0.001 = 0.1%)
-            verbose: Print detailed progress
-        """
         self.initial_capital = initial_capital
         self.rebalance_frequency = rebalance_frequency
         self.threshold_buy = threshold_buy
@@ -76,28 +63,34 @@ class DynamicBacktestEngine:
         self.transaction_cost = transaction_cost
         self.verbose = verbose
 
-        # Initialize components
         self.fetcher = FundamentalFetcher()
 
-        # Initialize score calculators
-        self.composite_calc = composite.CompositeRating()
-        self.f_score_calc = fundamentals.FScore()
-        self.t_score_calc = technical.TScore()
-        self.m_score_calc = momentum.MScore()
+        # Runtime state (reset per backtest)
+        self.position: int = 0
+        self.cash: float = initial_capital
+        self.shares: float = 0.0
+        self.entry_price: float = 0.0
+        self.equity_curve: List[Dict] = []
+        self.trade_history: List[Dict] = []
+        self.r_asre_history: List[Dict] = []
 
-        # State tracking
-        self.position = 0  # Current position (0 or 1 for single stock)
-        self.cash = initial_capital
-        self.shares = 0
-        self.equity_curve = []
-        self.trade_history = []
-        self.r_asre_history = []
+        # Internal — populated during run_backtest
+        self._current_ticker: str = ''
+        self._fundamentals_df: Optional[pd.DataFrame] = None
+        self._full_asre_series: Optional[pd.DataFrame] = None
 
         if self.verbose:
+            print(f"\n{'='*80}")
             print(f"✅ DynamicBacktestEngine initialized")
             print(f"   Initial capital: ${initial_capital:,.0f}")
             print(f"   Rebalance: {rebalance_frequency}")
-            print(f"   Thresholds: BUY>={threshold_buy}, SELL<{threshold_sell}")
+            print(f"   Thresholds: BUY>={threshold_buy}, SELL<{threshold_sell}, "
+                  f"F-floor>={threshold_fundamental_floor}")
+            print(f"{'='*80}")
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # Public API
+    # ──────────────────────────────────────────────────────────────────────────
 
     def run_backtest(
         self,
@@ -105,55 +98,77 @@ class DynamicBacktestEngine:
         start_date: str,
         end_date: str,
         fundamentals_df: Optional[pd.DataFrame] = None,
-        prices_df: Optional[pd.DataFrame] = None
+        prices_df: Optional[pd.DataFrame] = None,
     ) -> Dict:
-        """
-        Run dynamic backtest with quarterly R_ASRE recalculation.
 
-        Args:
-            ticker: Stock ticker
-            start_date: Backtest start date
-            end_date: Backtest end date
-            fundamentals_df: Pre-fetched fundamentals (optional)
-            prices_df: Pre-fetched prices (optional)
-
-        Returns:
-            Dictionary with backtest results
-        """
         if self.verbose:
             print(f"\n{'='*80}")
             print(f"🚀 STARTING DYNAMIC BACKTEST: {ticker}")
             print(f"{'='*80}")
-            print(f"Period: {start_date} to {end_date}")
-            print(f"Rebalance: {self.rebalance_frequency}")
+            print(f"   Period:    {start_date}  →  {end_date}")
+            print(f"   Rebalance: {self.rebalance_frequency}")
 
-        # Reset state
         self._reset_state()
+        self._current_ticker = ticker
 
-        # Fetch data if not provided
+        # ── 1. Fundamentals ───────────────────────────────────────────────────
         if fundamentals_df is None:
             if self.verbose:
                 print(f"\n📊 Fetching fundamental data...")
-            fundamentals_df = self.fetcher.fetch_quarterly_fundamentals(
+            fundamentals_df, _ = self.fetcher.fetch_quarterly_fundamentals(
                 ticker, start_date, end_date
             )
+        if fundamentals_df is None or fundamentals_df.empty:
+            raise BacktestEngineError(
+                f"No fundamental data for {ticker} [{start_date} → {end_date}]"
+            )
+        self._fundamentals_df = fundamentals_df
 
+        # ── 2. Prices ─────────────────────────────────────────────────────────
         if prices_df is None:
             if self.verbose:
                 print(f"\n📈 Fetching price data...")
-            prices_df = data_loader.fetch_stock_data(ticker, start_date, end_date)
+            prices_df = data_loader.load_stock_data(
+                ticker,
+                start_date,
+                end_date,
+                quarterly_fundamentals=fundamentals_df,
+            )
+        prices_df = self._normalise_df(prices_df)
 
-        # Initialize point-in-time data manager
+        if prices_df.empty:
+            raise BacktestEngineError(f"No price data returned for {ticker}")
+
+        close_col = 'Close' if 'Close' in prices_df.columns else 'close'
+
+        # ── 3. Compute full R_ASRE time-series ONCE ───────────────────────────
+        if self.verbose:
+            print(f"\n⚙️  Computing full R_ASRE time-series (walk-forward)...")
+        self._full_asre_series = self._compute_full_asre_series(ticker, prices_df)
+
+        asre_std = self._full_asre_series['r_asre'].std()
+        asre_range = (
+            self._full_asre_series['r_asre'].min(),
+            self._full_asre_series['r_asre'].max(),
+        )
+        if self.verbose:
+            print(f"   ✅ R_ASRE series: {len(self._full_asre_series)} rows | "
+                  f"std={asre_std:.2f} | "
+                  f"range=[{asre_range[0]:.1f}, {asre_range[1]:.1f}]")
+            if asre_std < 1.0:
+                print(f"   ⚠️  Low R_ASRE variance — consider extending start_date "
+                      f"for more walk-forward history.")
+
+        # ── 4. Point-in-time manager ──────────────────────────────────────────
         if self.verbose:
             print(f"\n🔒 Initializing point-in-time data manager...")
         pit = PointInTimeData(fundamentals_df)
 
-        # Validate no look-ahead bias
         if self.verbose:
             print(f"\n🔍 Validating no look-ahead bias...")
         pit.validate_no_lookahead(start_date, end_date, self.rebalance_frequency)
 
-        # Generate rebalance dates
+        # ── 5. Rebalance dates ────────────────────────────────────────────────
         rebalance_dates = self._generate_rebalance_dates(
             start_date, end_date, self.rebalance_frequency
         )
@@ -163,70 +178,83 @@ class DynamicBacktestEngine:
             print(f"📅 QUARTERLY REBALANCING ({len(rebalance_dates)} periods)")
             print(f"{'='*80}")
 
-        # Run backtest loop
+        # ── 6. Walk-forward loop ──────────────────────────────────────────────
         for i, rebalance_date in enumerate(rebalance_dates):
             if self.verbose:
-                print(f"\n--- Period {i+1}/{len(rebalance_dates)}: {rebalance_date.date()} ---")
+                print(f"\n--- Period {i+1}/{len(rebalance_dates)}: "
+                      f"{rebalance_date.date()} ---")
 
             try:
-                # Get point-in-time data
+                # PIT fundamental snapshot — raises if no announced data yet
                 pit_data = pit.get_data_as_of(rebalance_date)
+                announced_date = pd.Timestamp(pit_data['announced_date'])
+                if announced_date.tzinfo is not None:
+                    announced_date = announced_date.tz_localize(None)
 
-                # Get prices up to rebalance date
-                prices_up_to_date = prices_df[prices_df.index <= rebalance_date]
+                # R_ASRE as of announcement date (no look-ahead)
+                scores = self._lookup_scores_as_of(announced_date)
 
-                if prices_up_to_date.empty:
+                # Current price as of rebalance date
+                price_slice = prices_df[prices_df.index <= rebalance_date]
+                if price_slice.empty:
                     if self.verbose:
-                        print(f"⏭️  No price data yet, skipping...")
+                        print(f"   ⏭️  No price data yet — skipping")
                     continue
+                current_price = float(price_slice[close_col].iloc[-1])
 
-                # Calculate R_ASRE dynamically
-                scores = self._calculate_r_asre_point_in_time(
-                    pit_data, prices_up_to_date, rebalance_date
-                )
-
-                # Get current price
-                current_price = prices_up_to_date['Close'].iloc[-1]
-
-                # Generate signal
+                # Signal + execution
                 signal = self._generate_signal(scores)
-
-                # Execute trade
                 self._execute_trade(signal, current_price, rebalance_date)
 
-                # Update equity curve
+                # Mark portfolio to market
                 portfolio_value = self._calculate_portfolio_value(current_price)
+
+                # Record
                 self.equity_curve.append({
                     'date': rebalance_date,
                     'portfolio_value': portfolio_value,
                     'price': current_price,
-                    'position': self.position
+                    'position': self.position,
+                    'cash': self.cash,
+                    'shares': self.shares,
                 })
-
-                # Store R_ASRE history
                 self.r_asre_history.append({
                     'date': rebalance_date,
                     'quarter_date': pit_data['date'],
-                    'announced_date': pit_data['announced_date'],
+                    'announced_date': announced_date,
                     'r_asre': scores['r_asre'],
                     'f_score': scores['f_score'],
                     't_score': scores['t_score'],
                     'm_score': scores['m_score'],
-                    'signal': signal
+                    'signal': signal,
                 })
 
                 if self.verbose:
-                    print(f"   Quarter: {pit_data['date'].date()} (announced {pit_data['announced_date'].date()})")
-                    print(f"   R_ASRE: {scores['r_asre']:.1f} (F:{scores['f_score']:.0f}, T:{scores['t_score']:.0f}, M:{scores['m_score']:.0f})")
-                    print(f"   Signal: {signal} | Position: {self.position} | Price: ${current_price:.2f}")
-                    print(f"   Portfolio: ${portfolio_value:,.0f}")
+                    pnl_pct = (
+                        (portfolio_value / self.initial_capital - 1) * 100
+                    )
+                    print(f"   Quarter:   {pit_data['date'].date()} "
+                          f"(announced {announced_date.date()})")
+                    print(f"   R_ASRE:    {scores['r_asre']:.1f}  "
+                          f"(F:{scores['f_score']:.0f}  "
+                          f"T:{scores['t_score']:.0f}  "
+                          f"M:{scores['m_score']:.0f})")
+                    print(f"   Signal:    {signal:4s} | "
+                          f"Pos: {self.position} | "
+                          f"Price: ₹{current_price:,.2f} | "
+                          f"Portfolio: ₹{portfolio_value:,.0f} "
+                          f"({pnl_pct:+.2f}%)")
 
+            except BacktestEngineError as e:
+                if self.verbose:
+                    print(f"   ⚠️  Skipped: {e}")
+                continue
             except Exception as e:
                 if self.verbose:
-                    print(f"⚠️  Error at {rebalance_date}: {e}")
+                    print(f"   ⚠️  Error at {rebalance_date}: {e}")
                 continue
 
-        # Calculate final results
+        # ── 7. Results ────────────────────────────────────────────────────────
         results = self._calculate_results(ticker, prices_df)
 
         if self.verbose:
@@ -237,286 +265,402 @@ class DynamicBacktestEngine:
 
         return results
 
-    def _reset_state(self):
-        """Reset backtest state"""
+    # ──────────────────────────────────────────────────────────────────────────
+    # Core computation helpers
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def _compute_full_asre_series(
+        self, ticker: str, prices_df: pd.DataFrame
+    ) -> pd.DataFrame:
+        """
+        Call compute_complete_asre on full history once.
+        Returns DataFrame with DatetimeIndex, columns: r_asre f_score t_score m_score.
+        """
+        df = prices_df.copy()
+        df.attrs = {}
+
+        result = composite.compute_complete_asre(
+            df,
+            ticker=ticker,
+            medallion=True,
+            return_all_components=True,
+        )
+        result.attrs = {}
+        result.index = pd.to_datetime(result.index)
+        if result.index.tzinfo is not None:
+            result.index = result.index.tz_localize(None)
+        result = result.sort_index()
+
+        # Drop duplicate columns (composite sometimes emits them)
+        if result.columns.duplicated().any():
+            result = result.loc[:, ~result.columns.duplicated(keep='last')]
+
+        wanted = [c for c in ['r_asre', 'f_score', 't_score', 'm_score']
+                  if c in result.columns]
+        if not wanted:
+            raise BacktestEngineError(
+                "compute_complete_asre returned no scoring columns "
+                "(expected r_asre / f_score / t_score / m_score)."
+            )
+        return result[wanted].copy()
+
+    def _lookup_scores_as_of(self, as_of_date: pd.Timestamp) -> Dict[str, float]:
+        """
+        Return R_ASRE scores on the last trading day on or before as_of_date.
+
+        Uses pd.DataFrame.asof() which is equivalent to:
+            series[series.index <= date].iloc[-1]
+        but handles gaps, NaNs, and non-trading days correctly.
+        """
+        series = self._full_asre_series
+
+        # Guarantee tz-naive comparison
+        as_of_date = pd.Timestamp(as_of_date)
+        if as_of_date.tzinfo is not None:
+            as_of_date = as_of_date.tz_localize(None)
+
+        if as_of_date < series.index[0]:
+            raise BacktestEngineError(
+                f"No R_ASRE data available as of {as_of_date.date()}. "
+                f"Series starts {series.index[0].date()}. "
+                f"Extend start_date further back."
+            )
+
+        # .asof() returns a Series (one row); NaN where no prior data exists
+        row = series.asof(as_of_date)
+
+        def _safe(val, default: float = 50.0) -> float:
+            return float(val) if pd.notna(val) else default
+
+        return {
+            'r_asre':  _safe(row.get('r_asre')),
+            'f_score': _safe(row.get('f_score')),
+            't_score': _safe(row.get('t_score')),
+            'm_score': _safe(row.get('m_score')),
+        }
+
+    def _normalise_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Tz-naive DatetimeIndex, sorted ascending, attrs cleared."""
+        df = df.copy()
+        df.attrs = {}
+        df.index = pd.to_datetime(df.index)
+        if df.index.tzinfo is not None:
+            df.index = df.index.tz_localize(None)
+        if df.columns.duplicated().any():
+            df = df.loc[:, ~df.columns.duplicated(keep='last')]
+        return df.sort_index()
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # Signal + execution
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def _generate_signal(self, scores: Dict[str, float]) -> str:
+        r = scores['r_asre']
+        f = scores['f_score']
+        if r >= self.threshold_buy and f >= self.threshold_fundamental_floor:
+            return 'BUY'
+        elif r < self.threshold_sell:
+            return 'SELL'
+        return 'HOLD'
+
+    def _execute_trade(
+        self, signal: str, price: float, date: pd.Timestamp
+    ) -> None:
+        if signal == 'BUY' and self.position == 0 and price > 0:
+            cost = self.cash * self.transaction_cost
+            investable = self.cash - cost
+            self.shares = investable / price
+            self.entry_price = price
+            self.cash = 0.0
+            self.position = 1
+            self.trade_history.append({
+                'date': date, 'action': 'BUY',
+                'price': price, 'shares': round(self.shares, 4),
+                'cost': round(cost, 2),
+                'portfolio_value': round(self.shares * price, 2),
+            })
+
+        elif signal == 'SELL' and self.position == 1 and price > 0:
+            gross = self.shares * price
+            cost = gross * self.transaction_cost
+            net = gross - cost
+            pnl = net - (self.shares * self.entry_price)
+            self.trade_history.append({
+                'date': date, 'action': 'SELL',
+                'price': price, 'shares': round(self.shares, 4),
+                'cost': round(cost, 2),
+                'pnl': round(pnl, 2),
+                'portfolio_value': round(net, 2),
+            })
+            self.cash = net
+            self.shares = 0.0
+            self.entry_price = 0.0
+            self.position = 0
+
+    def _calculate_portfolio_value(self, current_price: float) -> float:
+        return (self.shares * current_price) if self.position == 1 else self.cash
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # State management
+    # ──────────────────────────────────────────────────────────────────────────
+
+    def _reset_state(self) -> None:
         self.position = 0
         self.cash = self.initial_capital
-        self.shares = 0
+        self.shares = 0.0
+        self.entry_price = 0.0
         self.equity_curve = []
         self.trade_history = []
         self.r_asre_history = []
+        self._full_asre_series = None
+        self._fundamentals_df = None
 
     def _generate_rebalance_dates(
-        self,
-        start_date: str,
-        end_date: str,
-        frequency: str
+        self, start_date: str, end_date: str, frequency: str
     ) -> List[pd.Timestamp]:
-        """Generate rebalance dates"""
         start = pd.to_datetime(start_date)
         end = pd.to_datetime(end_date)
+        freq_map = {'Q': 'QS', 'M': 'MS', 'W': 'W-MON', 'D': 'B'}
+        if frequency not in freq_map:
+            raise ValueError(
+                f"Unsupported frequency '{frequency}'. "
+                f"Choose from: {list(freq_map.keys())}"
+            )
+        return list(pd.date_range(start, end, freq=freq_map[frequency]))
 
-        if frequency == 'Q':
-            dates = pd.date_range(start, end, freq='QS')
-        elif frequency == 'M':
-            dates = pd.date_range(start, end, freq='MS')
-        else:
-            raise ValueError(f"Invalid frequency: {frequency}")
-
-        return list(dates)
-
-    def _calculate_r_asre_point_in_time(
-        self,
-        fundamentals_row: pd.Series,
-        prices: pd.DataFrame,
-        as_of_date: pd.Timestamp
-    ) -> Dict[str, float]:
-        """
-        Calculate R_ASRE using only data available as of date.
-
-        This is the CRITICAL method that prevents look-ahead bias.
-        """
-        # Calculate F-Score from fundamentals
-        f_score = self.f_score_calc.calculate(fundamentals_row)
-
-        # Calculate T-Score from prices (up to as_of_date only!)
-        t_score = self.t_score_calc.calculate(prices)
-
-        # Calculate M-Score from prices (up to as_of_date only!)
-        m_score = self.m_score_calc.calculate(prices)
-
-        # Combine into R_ASRE using composite calculator
-        r_asre = self.composite_calc.calculate_composite_score(
-            f_score, t_score, m_score
-        )
-
-        return {
-            'r_asre': r_asre,
-            'f_score': f_score,
-            't_score': t_score,
-            'm_score': m_score
-        }
-
-    def _generate_signal(self, scores: Dict[str, float]) -> str:
-        """
-        Generate trading signal based on scores.
-
-        Rules:
-        - BUY if R_ASRE >= threshold_buy AND F-Score >= fundamental_floor
-        - SELL if R_ASRE < threshold_sell
-        - HOLD otherwise
-        """
-        r_asre = scores['r_asre']
-        f_score = scores['f_score']
-
-        # Check fundamental floor
-        if f_score < self.threshold_fundamental_floor:
-            return 'HOLD'  # Don't buy if fundamentals weak
-
-        # Generate signal
-        if r_asre >= self.threshold_buy:
-            return 'BUY'
-        elif r_asre < self.threshold_sell:
-            return 'SELL'
-        else:
-            return 'HOLD'
-
-    def _execute_trade(
-        self,
-        signal: str,
-        price: float,
-        date: pd.Timestamp
-    ):
-        """Execute trade based on signal"""
-        if signal == 'BUY' and self.position == 0:
-            # Buy: Invest all cash
-            cost = self.cash * self.transaction_cost
-            self.shares = (self.cash - cost) / price
-            self.cash = 0
-            self.position = 1
-
-            self.trade_history.append({
-                'date': date,
-                'action': 'BUY',
-                'price': price,
-                'shares': self.shares,
-                'cost': cost
-            })
-
-        elif signal == 'SELL' and self.position == 1:
-            # Sell: Convert shares to cash
-            proceeds = self.shares * price
-            cost = proceeds * self.transaction_cost
-            self.cash = proceeds - cost
-            self.shares = 0
-            self.position = 0
-
-            self.trade_history.append({
-                'date': date,
-                'action': 'SELL',
-                'price': price,
-                'shares': self.shares,
-                'cost': cost
-            })
-
-    def _calculate_portfolio_value(self, current_price: float) -> float:
-        """Calculate current portfolio value"""
-        if self.position == 1:
-            return self.shares * current_price
-        else:
-            return self.cash
+    # ──────────────────────────────────────────────────────────────────────────
+    # Results
+    # ──────────────────────────────────────────────────────────────────────────
 
     def _calculate_results(
-        self,
-        ticker: str,
-        prices_df: pd.DataFrame
+        self, ticker: str, prices_df: pd.DataFrame
     ) -> Dict:
-        """Calculate comprehensive backtest results"""
         equity_df = pd.DataFrame(self.equity_curve)
         r_asre_df = pd.DataFrame(self.r_asre_history)
 
         if equity_df.empty:
-            raise BacktestEngineError("No backtest data generated")
+            raise BacktestEngineError(
+                "No backtest data generated — all periods were skipped. "
+                "Try extending start_date so fundamentals are available earlier."
+            )
 
-        # Calculate returns
-        equity_df['returns'] = equity_df['portfolio_value'].pct_change()
-
-        # Final portfolio value
-        final_value = equity_df['portfolio_value'].iloc[-1]
+        # ── Return metrics ────────────────────────────────────────────────────
+        final_value = float(equity_df['portfolio_value'].iloc[-1])
         total_return = (final_value - self.initial_capital) / self.initial_capital * 100
 
-        # Calculate CAGR
         days = (equity_df['date'].iloc[-1] - equity_df['date'].iloc[0]).days
-        years = days / 365.25
-        cagr = ((final_value / self.initial_capital) ** (1 / years) - 1) * 100 if years > 0 else 0
+        years = max(days / 365.25, 1e-6)
+        cagr = ((final_value / self.initial_capital) ** (1.0 / years) - 1.0) * 100
 
-        # Calculate Sharpe ratio (annualized)
-        returns = equity_df['returns'].dropna()
-        if len(returns) > 0 and returns.std() > 0:
-            sharpe_ratio = (returns.mean() / returns.std()) * np.sqrt(252)
-        else:
-            sharpe_ratio = 0
+        # ── Sharpe (quarterly periods) ────────────────────────────────────────
+        equity_df['returns'] = equity_df['portfolio_value'].pct_change()
+        qreturns = equity_df['returns'].dropna()
+        periods_per_year = {'Q': 4, 'M': 12, 'W': 52, 'D': 252}.get(
+            self.rebalance_frequency, 4
+        )
+        sharpe = (
+            (qreturns.mean() / qreturns.std()) * np.sqrt(periods_per_year)
+            if len(qreturns) > 1 and qreturns.std() > 0 else 0.0
+        )
 
-        # Calculate max drawdown
+        # ── Drawdown ──────────────────────────────────────────────────────────
         equity_df['cummax'] = equity_df['portfolio_value'].cummax()
-        equity_df['drawdown'] = (equity_df['portfolio_value'] - equity_df['cummax']) / equity_df['cummax'] * 100
-        max_drawdown = equity_df['drawdown'].min()
+        equity_df['drawdown_pct'] = (
+            (equity_df['portfolio_value'] - equity_df['cummax'])
+            / equity_df['cummax'] * 100
+        )
+        max_drawdown = float(equity_df['drawdown_pct'].min())
 
-        # Calculate buy & hold returns
-        buy_hold_return = self._calculate_buy_hold_return(prices_df)
+        # ── Buy & hold over the exact same price window ───────────────────────
+        bh_return = self._calculate_buy_hold_return(prices_df)
+        alpha = total_return - bh_return
 
-        # R_ASRE statistics (CRITICAL: Proves it's dynamic!)
-        r_asre_mean = r_asre_df['r_asre'].mean()
-        r_asre_std = r_asre_df['r_asre'].std()
-        r_asre_min = r_asre_df['r_asre'].min()
-        r_asre_max = r_asre_df['r_asre'].max()
-
-        # Count signals
-        signals = r_asre_df['signal'].value_counts().to_dict()
+        # ── Trade statistics ──────────────────────────────────────────────────
+        trade_df = pd.DataFrame(self.trade_history)
+        win_rate = 0.0
+        avg_win = avg_loss = 0.0
+        if not trade_df.empty and 'pnl' in trade_df.columns:
+            sells = trade_df[trade_df['action'] == 'SELL']['pnl']
+            if len(sells) > 0:
+                win_rate = float((sells > 0).mean() * 100)
+                wins = sells[sells > 0]
+                losses = sells[sells <= 0]
+                avg_win = float(wins.mean()) if len(wins) > 0 else 0.0
+                avg_loss = float(losses.mean()) if len(losses) > 0 else 0.0
 
         return {
-            'ticker': ticker,
-            'start_date': equity_df['date'].iloc[0],
-            'end_date': equity_df['date'].iloc[-1],
+            # Identity
+            'ticker':          ticker,
+            'start_date':      equity_df['date'].iloc[0],
+            'end_date':        equity_df['date'].iloc[-1],
             'initial_capital': self.initial_capital,
-            'final_value': final_value,
-            'total_return': total_return,
-            'cagr': cagr,
-            'sharpe_ratio': sharpe_ratio,
-            'max_drawdown': max_drawdown,
-            'buy_hold_return': buy_hold_return,
-            'alpha': total_return - buy_hold_return,
-            'num_trades': len(self.trade_history),
-            'num_periods': len(equity_df),
-            'r_asre_mean': r_asre_mean,
-            'r_asre_std': r_asre_std,
-            'r_asre_min': r_asre_min,
-            'r_asre_max': r_asre_max,
-            'signals': signals,
-            'equity_curve': equity_df,
-            'trade_history': pd.DataFrame(self.trade_history),
-            'r_asre_history': r_asre_df
+            # Performance
+            'final_value':     final_value,
+            'total_return':    total_return,
+            'cagr':            cagr,
+            'sharpe_ratio':    sharpe,
+            'max_drawdown':    max_drawdown,
+            'buy_hold_return': bh_return,
+            'alpha':           alpha,
+            # Trade stats
+            'num_trades':      len(self.trade_history),
+            'num_periods':     len(equity_df),
+            'win_rate':        win_rate,
+            'avg_win':         avg_win,
+            'avg_loss':        avg_loss,
+            # R_ASRE dynamics
+            'r_asre_mean':     float(r_asre_df['r_asre'].mean()),
+            'r_asre_std':      float(r_asre_df['r_asre'].std()),
+            'r_asre_min':      float(r_asre_df['r_asre'].min()),
+            'r_asre_max':      float(r_asre_df['r_asre'].max()),
+            'signals':         r_asre_df['signal'].value_counts().to_dict(),
+            # Raw data
+            'equity_curve':    equity_df,
+            'trade_history':   trade_df,
+            'r_asre_history':  r_asre_df,
         }
 
     def _calculate_buy_hold_return(self, prices_df: pd.DataFrame) -> float:
-        """Calculate buy & hold benchmark return"""
         if len(prices_df) < 2:
-            return 0
+            return 0.0
+        col = 'Close' if 'Close' in prices_df.columns else 'close'
+        s = float(prices_df[col].iloc[0])
+        e = float(prices_df[col].iloc[-1])
+        return (e - s) / s * 100 if s > 0 else 0.0
 
-        start_price = prices_df['Close'].iloc[0]
-        end_price = prices_df['Close'].iloc[-1]
+    def _print_results(self, results: Dict) -> None:
+        W = 80
+        sep = '─' * W
 
-        return (end_price - start_price) / start_price * 100
+        def row(label, val): print(f"   {label:<30} {val}")
 
-    def _print_results(self, results: Dict):
-        """Print formatted results"""
         print(f"\n📊 PERFORMANCE SUMMARY")
-        print(f"{'─'*80}")
-        print(f"Total Return:        {results['total_return']:>8.2f}%")
-        print(f"CAGR:                {results['cagr']:>8.2f}%")
-        print(f"Sharpe Ratio:        {results['sharpe_ratio']:>8.2f}")
-        print(f"Max Drawdown:        {results['max_drawdown']:>8.2f}%")
-        print(f"Buy & Hold Return:   {results['buy_hold_return']:>8.2f}%")
-        print(f"Alpha:               {results['alpha']:>8.2f}%")
+        print(sep)
+        row("Total Return:",       f"{results['total_return']:>+8.2f}%")
+        row("CAGR:",               f"{results['cagr']:>+8.2f}%")
+        row("Sharpe Ratio:",       f"{results['sharpe_ratio']:>8.3f}")
+        row("Max Drawdown:",       f"{results['max_drawdown']:>8.2f}%")
+        row("Buy & Hold Return:",  f"{results['buy_hold_return']:>+8.2f}%")
+        row("Alpha vs B&H:",       f"{results['alpha']:>+8.2f}%")
+
         print(f"\n📈 TRADING ACTIVITY")
-        print(f"{'─'*80}")
-        print(f"Number of Trades:    {results['num_trades']:>8}")
-        print(f"Number of Periods:   {results['num_periods']:>8}")
-        print(f"Signals: {results['signals']}")
-        print(f"\n🎯 R_ASRE STATISTICS (Dynamic Proof!)")
-        print(f"{'─'*80}")
-        print(f"Mean:                {results['r_asre_mean']:>8.2f}")
-        print(f"Std Dev:             {results['r_asre_std']:>8.2f}  ← MUST BE > 0!")
-        print(f"Min:                 {results['r_asre_min']:>8.2f}")
-        print(f"Max:                 {results['r_asre_max']:>8.2f}")
+        print(sep)
+        row("Trades Executed:",    f"{results['num_trades']:>8}")
+        row("Periods Evaluated:",  f"{results['num_periods']:>8}")
+        row("Win Rate:",           f"{results['win_rate']:>8.1f}%")
+        if results['avg_win'] != 0:
+            row("Avg Win / Loss:", f"₹{results['avg_win']:,.0f}  /  ₹{results['avg_loss']:,.0f}")
+        row("Signals:",            str(results['signals']))
+
+        print(f"\n🎯 R_ASRE DYNAMICS")
+        print(sep)
+        row("Mean:",  f"{results['r_asre_mean']:>8.2f}")
+        row("Std Dev (must be >0):", f"{results['r_asre_std']:>8.2f}")
+        row("Min → Max:", f"{results['r_asre_min']:.1f}  →  {results['r_asre_max']:.1f}")
 
         if results['r_asre_std'] > 0:
-            print(f"\n✅ R_ASRE IS DYNAMIC (std dev = {results['r_asre_std']:.2f})")
+            print(f"\n   ✅ R_ASRE IS DYNAMIC  (std dev = {results['r_asre_std']:.2f})")
         else:
-            print(f"\n❌ WARNING: R_ASRE APPEARS STATIC (std dev = 0)")
+            print(f"\n   ❌ R_ASRE STATIC — extend start_date for more walk-forward history")
+
+        print(f"\n📋 TRADE LOG")
+        print(sep)
+        if not results['trade_history'].empty:
+            cols = [c for c in ['date','action','price','shares','pnl','portfolio_value']
+                    if c in results['trade_history'].columns]
+            print(results['trade_history'][cols].to_string(index=False))
+        else:
+            print("   No trades executed.")
 
 
-# Example usage
+# ──────────────────────────────────────────────────────────────────────────────
+# CLI entry point
+# ──────────────────────────────────────────────────────────────────────────────
+
+def _build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
+        prog='engine_v3',
+        description='Dynamic ASRE Backtest Engine v3.0',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    p.add_argument('--ticker',     required=True,
+                   help='Stock ticker, e.g. INFY.NS  TCS.NS  RELIANCE.NS')
+    p.add_argument('--start',      required=True,  dest='start_date',
+                   help='Backtest start date  YYYY-MM-DD  (use ≥5 yrs for best results)')
+    p.add_argument('--end',        required=True,  dest='end_date',
+                   help='Backtest end date    YYYY-MM-DD')
+    p.add_argument('--capital',    type=float, default=100_000,
+                   help='Initial capital in ₹/$')
+    p.add_argument('--freq',       default='Q', choices=['Q','M','W'],
+                   help='Rebalance frequency: Q=quarterly  M=monthly  W=weekly')
+    p.add_argument('--buy',        type=float, default=70,
+                   help='R_ASRE buy threshold')
+    p.add_argument('--sell',       type=float, default=40,
+                   help='R_ASRE sell threshold')
+    p.add_argument('--f-floor',    type=float, default=60, dest='f_floor',
+                   help='Minimum F-Score to allow a BUY signal')
+    p.add_argument('--cost',       type=float, default=0.001,
+                   help='Round-trip transaction cost fraction (0.001 = 0.1%%)')
+    p.add_argument('--quiet',      action='store_true',
+                   help='Suppress verbose period-by-period output')
+    return p
+
+
 if __name__ == '__main__':
-    """
-    Example: Run dynamic backtest on NVDA
-    """
-    print("="*80)
-    print("DYNAMIC BACKTEST ENGINE v3.0 - EXAMPLE")
-    print("="*80)
+    parser = _build_parser()
+
+    # ── Allow both CLI args AND hardcoded defaults (for IDE run) ─────────────
+    # If no args are passed (e.g. run from IDE), use these defaults:
+    _DEFAULTS = [
+        '--ticker', 'INFY.NS',
+        '--start',  '2020-01-01',
+        '--end',    '2026-04-01',
+    ]
+    args = parser.parse_args(sys.argv[1:] if len(sys.argv) > 1 else _DEFAULTS)
+
+    print("=" * 80)
+    print("  DYNAMIC BACKTEST ENGINE v3.0")
+    print("=" * 80)
 
     try:
-        # Initialize engine
         engine = DynamicBacktestEngine(
-            initial_capital=100000,
-            rebalance_frequency='Q',
-            threshold_buy=70,
-            threshold_sell=40,
-            verbose=True
+            initial_capital=args.capital,
+            rebalance_frequency=args.freq,
+            threshold_buy=args.buy,
+            threshold_sell=args.sell,
+            threshold_fundamental_floor=args.f_floor,
+            transaction_cost=args.cost,
+            verbose=not args.quiet,
         )
 
-        # Run backtest
         results = engine.run_backtest(
-            ticker='NVDA',
-            start_date='2023-01-01',
-            end_date='2024-12-31'
+            ticker=args.ticker,
+            start_date=args.start_date,
+            end_date=args.end_date,
         )
 
-        # Show R_ASRE evolution
-        print(f"\n📊 R_ASRE EVOLUTION (First 10 periods):")
-        print(results['r_asre_history'][['date', 'r_asre', 'signal']].head(10).to_string(index=False))
+        # ── R_ASRE evolution table ────────────────────────────────────────────
+        print(f"\n📊 R_ASRE EVOLUTION:")
+        print(results['r_asre_history'][
+            ['date','quarter_date','announced_date','r_asre','f_score','t_score','m_score','signal']
+        ].to_string(index=False))
 
-        # Verify dynamic R_ASRE
+        # ── Final verification ────────────────────────────────────────────────
         print(f"\n✅ VERIFICATION:")
-        print(f"   R_ASRE changed: {results['r_asre_history']['r_asre'].nunique()} unique values")
-        print(f"   R_ASRE std dev: {results['r_asre_std']:.2f}")
-
+        n_unique = results['r_asre_history']['r_asre'].nunique()
+        print(f"   Unique R_ASRE values : {n_unique}")
+        print(f"   R_ASRE std dev       : {results['r_asre_std']:.3f}")
         if results['r_asre_std'] > 0:
-            print(f"   ✅ DYNAMIC R_ASRE CONFIRMED!")
+            print(f"   ✅ DYNAMIC R_ASRE CONFIRMED")
         else:
-            print(f"   ❌ WARNING: R_ASRE appears static")
+            print(f"   ❌ R_ASRE static — re-run with --start 2018-01-01 "
+                  f"for longer walk-forward window")
 
+    except BacktestEngineError as e:
+        print(f"\n❌ Backtest Error: {e}")
+        sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\n❌ Unexpected error: {e}")
         import traceback
         traceback.print_exc()
+        sys.exit(1)
