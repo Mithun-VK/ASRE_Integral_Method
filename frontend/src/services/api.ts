@@ -1,6 +1,6 @@
 /* ─── API Service — wired to FastAPI backend (Indian NSE mode) ─── */
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = 'https://api.arkangel.co.in';
 
 // ─── Our frontend's unified score shape ───────────────────────────────────────
 export interface ASREScoreResponse {
