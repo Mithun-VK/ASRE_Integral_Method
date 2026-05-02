@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { submitWaitlist, type WaitlistPayload, type WaitlistResponse } from '../services/api';
+import { submitWaitlist, type WaitlistPayload } from '../services/api';
 
 export interface UseWaitlistReturn {
   submitting: boolean;

@@ -13,9 +13,9 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Prevent text size inflation on mobile */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  scroll-padding-top: 80px;
 }
 
 body {
@@ -23,16 +23,27 @@ body {
   background-color: #0F0F0F;
   color: #E5E7EB;
   overflow-x: hidden;
-  /* Prevent overscroll bounce on iOS */
   overscroll-behavior-y: none;
 }
 
 /* ─── Scrollbar Styling (desktop only) ─── */
 @media (min-width: 768px) {
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: #0F0F0F; }
-  ::-webkit-scrollbar-thumb { background: #DC2626; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #EF4444; }
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0F0F0F;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #DC2626;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #EF4444;
+  }
 }
 
 /* ─── Selection Color ─── */
@@ -41,29 +52,30 @@ body {
   color: #fff;
 }
 
+/* ─── Focus Ring ─── */
+:focus-visible {
+  outline: 2px solid #DC2626;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 /* ─── Custom Utility Classes ─── */
 @layer components {
 
-  /* Container — 16px padding on mobile, scales up */
   .section-container {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  /* Section vertical rhythm — tighter on mobile */
   .section-padding {
     @apply py-12 sm:py-16 lg:py-24;
   }
 
-  /* Glass card — touch-friendly rounded corners */
   .glass-card {
     @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-2xl;
   }
 
   .glass-card-hover {
-    @apply glass-card transition-all duration-500
-           hover:bg-white/[0.06] hover:border-ark-red/30
-           hover:shadow-lg hover:shadow-ark-red/5
-           sm:hover:-translate-y-1;
+    @apply glass-card transition-all duration-500 hover:bg-white/[0.06] hover:border-ark-red/30 hover:shadow-lg hover:shadow-ark-red/5 sm:hover:-translate-y-1;
   }
 
   .gradient-text {
@@ -74,17 +86,14 @@ body {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-ark-gold via-yellow-300 to-ark-gold-light;
   }
 
-  /* Responsive section titles */
   .section-title {
     @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight;
   }
 
-  /* Section subtitle — readable on all sizes */
   .section-subtitle {
     @apply text-base sm:text-lg text-gray-400 max-w-2xl leading-relaxed;
   }
 
-  /* Glows */
   .red-glow {
     box-shadow: 0 0 40px rgba(220, 38, 38, 0.15), 0 0 120px rgba(220, 38, 38, 0.05);
   }
@@ -93,57 +102,145 @@ body {
     box-shadow: 0 0 40px rgba(245, 158, 11, 0.15), 0 0 120px rgba(245, 158, 11, 0.05);
   }
 
-  /* Touch-target minimum — 44px on mobile */
   .touch-target {
     @apply min-h-[44px] min-w-[44px];
   }
 
-  /* Truncate long hash/run-id values on small screens */
   .hash-truncate {
     @apply truncate max-w-[180px] sm:max-w-none sm:break-all;
   }
 }
 
-/* ─── Noise Texture Overlay ─── */
+/* ══════════════════════════════════════════════════
+   ─── NOISE TEXTURE OVERLAY ───
+══════════════════════════════════════════════════ */
 .noise-bg::before {
   content: '';
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
 }
 
-/* ─── Grid Pattern Background ─── */
+/* ══════════════════════════════════════════════════
+   ─── GRID PATTERN BACKGROUND ───
+══════════════════════════════════════════════════ */
 .grid-bg {
   background-image:
     linear-gradient(rgba(220, 38, 38, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(220, 38, 38, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px; /* smaller on mobile */
+  background-size: 40px 40px;
 }
+
 @media (min-width: 640px) {
-  .grid-bg { background-size: 60px 60px; }
+  .grid-bg {
+    background-size: 60px 60px;
+  }
 }
 
-/* ─── Animated Score Bar ─── */
-.score-bar-fill {
-  transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+/* ══════════════════════════════════════════════════
+   ─── ANIMATED GRADIENT MESH BACKGROUND ───
+══════════════════════════════════════════════════ */
+@property --g1-x {
+  syntax: '<percentage>';
+  initial-value: 20%;
+  inherits: false;
 }
 
-/* ─── Shimmer Effect ─── */
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s linear infinite;
+@property --g1-y {
+  syntax: '<percentage>';
+  initial-value: 30%;
+  inherits: false;
 }
 
-/* ─── Hero Gradient Mesh ─── */
+@property --g2-x {
+  syntax: '<percentage>';
+  initial-value: 80%;
+  inherits: false;
+}
+
+@property --g2-y {
+  syntax: '<percentage>';
+  initial-value: 70%;
+  inherits: false;
+}
+
+@property --g3-x {
+  syntax: '<percentage>';
+  initial-value: 50%;
+  inherits: false;
+}
+
+@property --g3-y {
+  syntax: '<percentage>';
+  initial-value: 10%;
+  inherits: false;
+}
+
+@keyframes meshDrift {
+  0% {
+    --g1-x: 20%;
+    --g1-y: 30%;
+    --g2-x: 80%;
+    --g2-y: 70%;
+    --g3-x: 50%;
+    --g3-y: 10%;
+  }
+
+  25% {
+    --g1-x: 60%;
+    --g1-y: 15%;
+    --g2-x: 25%;
+    --g2-y: 85%;
+    --g3-x: 75%;
+    --g3-y: 45%;
+  }
+
+  50% {
+    --g1-x: 40%;
+    --g1-y: 70%;
+    --g2-x: 70%;
+    --g2-y: 20%;
+    --g3-x: 15%;
+    --g3-y: 75%;
+  }
+
+  75% {
+    --g1-x: 10%;
+    --g1-y: 50%;
+    --g2-x: 85%;
+    --g2-y: 40%;
+    --g3-x: 60%;
+    --g3-y: 90%;
+  }
+
+  100% {
+    --g1-x: 20%;
+    --g1-y: 30%;
+    --g2-x: 80%;
+    --g2-y: 70%;
+    --g3-x: 50%;
+    --g3-y: 10%;
+  }
+}
+
+.hero-mesh-gradient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at var(--g1-x) var(--g1-y), rgba(220, 38, 38, 0.10) 0%, transparent 50%),
+    radial-gradient(circle at var(--g2-x) var(--g2-y), rgba(245, 158, 11, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at var(--g3-x) var(--g3-y), rgba(220, 38, 38, 0.05) 0%, transparent 50%);
+  animation: meshDrift 20s ease-in-out infinite;
+  z-index: 0;
+}
+
+/* Legacy hero-mesh class — keep for backward compat */
 .hero-mesh {
   background:
     radial-gradient(ellipse at 20% 50%, rgba(220, 38, 38, 0.08) 0%, transparent 50%),
@@ -151,61 +248,496 @@ body {
     radial-gradient(ellipse at 50% 80%, rgba(220, 38, 38, 0.04) 0%, transparent 50%);
 }
 
-/* ─── Intersection Observer reveal animations ─── */
+/* ══════════════════════════════════════════════════
+   ─── SCROLL PROGRESS BAR ───
+══════════════════════════════════════════════════ */
+.scroll-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #DC2626, #F59E0B, #DC2626);
+  background-size: 200% 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  z-index: 9999;
+  pointer-events: none;
+  /* CSS scroll-driven animation — supported in Chrome 115+, Edge 115+ */
+  animation: scrollProgress linear both, gradientShift 3s ease-in-out infinite;
+  animation-timeline: scroll(), auto;
+}
+
+@keyframes scrollProgress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes gradientShift {
+
+  0%,
+  100% {
+    background-position: 0% 0%;
+  }
+
+  50% {
+    background-position: 100% 0%;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   ─── HOLOGRAPHIC CARD BORDER ───
+══════════════════════════════════════════════════ */
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.holographic-border {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--card-bg, #1a1a1a), var(--card-bg, #1a1a1a)) padding-box,
+    conic-gradient(from var(--border-angle),
+      #DC2626 0%,
+      #F59E0B 25%,
+      #DC2626 50%,
+      #EF4444 75%,
+      #DC2626 100%) border-box;
+  animation: borderSpin 4s linear infinite;
+}
+
+@keyframes borderSpin {
+  to {
+    --border-angle: 360deg;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   ─── SHIMMER EFFECTS ───
+══════════════════════════════════════════════════ */
+
+/* Legacy shimmer — keep existing usage */
+.shimmer {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Button shimmer sweep — for CTAButton */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.10) 50%,
+      transparent 60%);
+  background-size: 200% 100%;
+  background-position: -200% 0;
+  animation: shimmerSweep 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmerSweep {
+  0% {
+    background-position: -200% 0;
+  }
+
+  30% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   ─── SCORE & BADGE ANIMATIONS ───
+══════════════════════════════════════════════════ */
+
+/* Score bar fill */
+.score-bar-fill {
+  transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Score badge glow pulse — red brand accent */
+@keyframes scorePulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 8px rgba(220, 38, 38, 0.3),
+      0 0 0px rgba(220, 38, 38, 0.0);
+  }
+
+  50% {
+    box-shadow:
+      0 0 20px rgba(220, 38, 38, 0.7),
+      0 0 40px rgba(220, 38, 38, 0.2);
+  }
+}
+
+.score-pulse {
+  animation: scorePulse 2s ease-in-out infinite;
+}
+
+/* Gold badge glow — for high scores / featured */
+@keyframes goldPulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 8px rgba(245, 158, 11, 0.3),
+      0 0 0px rgba(245, 158, 11, 0.0);
+  }
+
+  50% {
+    box-shadow:
+      0 0 20px rgba(245, 158, 11, 0.7),
+      0 0 40px rgba(245, 158, 11, 0.2);
+  }
+}
+
+.gold-pulse {
+  animation: goldPulse 2s ease-in-out infinite;
+}
+
+/* Shield / compliance icon pulse */
+@keyframes shieldPulse {
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px rgba(220, 38, 38, 0.3));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 12px rgba(220, 38, 38, 0.7)) drop-shadow(0 0 24px rgba(220, 38, 38, 0.2));
+  }
+}
+
+.shield-pulse {
+  animation: shieldPulse 3s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════
+   ─── CLICK RIPPLE EFFECT ───
+══════════════════════════════════════════════════ */
+@keyframes rippleExpand {
+  0% {
+    transform: scale(0);
+    opacity: 0.35;
+  }
+
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.ripple-element {
+  position: absolute;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  margin-top: -30px;
+  margin-left: -30px;
+  background: rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+  animation: rippleExpand 0.6s ease-out forwards;
+}
+
+/* ══════════════════════════════════════════════════
+   ─── SVG STROKE DRAW ANIMATION ───
+══════════════════════════════════════════════════ */
+.svg-draw {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawStroke 2s ease-out forwards;
+}
+
+@keyframes drawStroke {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Connecting line for HowItWorks steps */
+.step-connector {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  transition: stroke-dashoffset 1s ease-out;
+}
+
+.step-connector.drawn {
+  stroke-dashoffset: 0;
+}
+
+/* ══════════════════════════════════════════════════
+   ─── INTERSECTION OBSERVER REVEAL (LEGACY) ───
+══════════════════════════════════════════════════ */
 .reveal {
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 0.8s ease, transform 0.8s ease;
 }
+
 .reveal.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* ─── Modal Overlay ─── */
+/* ══════════════════════════════════════════════════
+   ─── MODAL OVERLAY ───
+══════════════════════════════════════════════════ */
 .modal-overlay {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(8px);
-  /* Ensure modal is scrollable on small screens */
+  -webkit-backdrop-filter: blur(8px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* ─── Safe area insets (notch/home-bar on iOS) ─── */
+/* ══════════════════════════════════════════════════
+   ─── NAVBAR FROSTED GLASS ───
+══════════════════════════════════════════════════ */
+.navbar-scrolled {
+  background: rgba(15, 15, 15, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(220, 38, 38, 0.15) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Nav link underline draw */
+.nav-link-underline {
+  position: relative;
+}
+
+.nav-link-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background: #DC2626;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-link-underline:hover::after,
+.nav-link-underline.active::after {
+  width: 100%;
+}
+
+/* ══════════════════════════════════════════════════
+   ─── TYPEWRITER CURSOR ───
+══════════════════════════════════════════════════ */
+@keyframes cursorBlink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: currentColor;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  animation: cursorBlink 1s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════
+   ─── LOADING SPINNER (BRAND) ───
+══════════════════════════════════════════════════ */
+@keyframes spinArc {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.brand-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(220, 38, 38, 0.2);
+  border-top-color: #DC2626;
+  border-radius: 50%;
+  animation: spinArc 0.7s linear infinite;
+  display: inline-block;
+}
+
+/* ══════════════════════════════════════════════════
+   ─── SAFE AREA INSETS (iOS) ───
+══════════════════════════════════════════════════ */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
 .pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* ─── Prevent horizontal overflow from long hashes ─── */
+/* ══════════════════════════════════════════════════
+   ─── TYPOGRAPHY UTILITIES ───
+══════════════════════════════════════════════════ */
 .font-mono {
   word-break: break-all;
 }
-/* But NOT for ticker labels */
+
 .ticker-label {
   word-break: normal;
 }
 
-/* ─── Tablet intermediate breakpoint helpers ─── */
+/* ══════════════════════════════════════════════════
+   ─── TABLET INTERMEDIATE BREAKPOINT ───
+══════════════════════════════════════════════════ */
 @media (min-width: 480px) and (max-width: 639px) {
-  .section-title { font-size: 1.75rem; }
+  .section-title {
+    font-size: 1.75rem;
+  }
 }
 
-/* ─── Fix iOS input zoom (font-size must be >= 16px) ─── */
+/* ══════════════════════════════════════════════════
+   ─── iOS INPUT ZOOM FIX ───
+══════════════════════════════════════════════════ */
 input[type="text"],
 input[type="email"],
 input[type="search"],
 textarea {
   font-size: 16px !important;
 }
-/* But keep the display size from Tailwind on desktop */
+
 @media (min-width: 640px) {
+
   input[type="text"],
   input[type="email"],
   input[type="search"],
   textarea {
     font-size: inherit !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   ─── REDUCED MOTION OVERRIDES ───
+   Must be last to override everything above
+══════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hero-mesh-gradient {
+    animation: none;
+  }
+
+  .scroll-progress-bar {
+    animation: none;
+  }
+
+  .btn-shimmer::after {
+    animation: none;
+  }
+
+  .holographic-border {
+    animation: none;
+  }
+
+  .shimmer {
+    animation: none;
+  }
+
+  .score-pulse {
+    animation: none;
+  }
+
+  .gold-pulse {
+    animation: none;
+  }
+
+  .shield-pulse {
+    animation: none;
+  }
+
+  .brand-spinner {
+    animation: spinArc 1.5s linear infinite;
+  }
+
+  /* keep but slow */
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   ─── MOBILE PERFORMANCE OVERRIDES ───
+══════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+
+  /* Slow down heavy animations on mobile */
+  .hero-mesh-gradient {
+    animation-duration: 30s;
+  }
+
+  .holographic-border {
+    animation: none;
+  }
+
+  /* too heavy on mobile GPU */
+  .btn-shimmer::after {
+    animation-duration: 5s;
+  }
+
+  /* Disable backdrop blur on low-power mobile (fallback) */
+  @supports not (backdrop-filter: blur(1px)) {
+    .glass-card {
+      background: rgba(20, 20, 20, 0.95);
+    }
+
+    .modal-overlay {
+      background: rgba(0, 0, 0, 0.9);
+    }
+
+    .navbar-scrolled {
+      background: rgba(15, 15, 15, 0.98) !important;
+    }
   }
 }
