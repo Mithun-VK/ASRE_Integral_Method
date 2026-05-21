@@ -1,0 +1,78 @@
+================================================================================
+ASRE DAILY ACTION REPORT — 2026-05-19
+================================================================================
+Run ID: 0686cb91-a78d-4c83-91d9-1513293e6698
+Mode: IA
+Dry Run: False
+
+────────────────────────────────────────────────────────────────────────────────
+PORTFOLIO SUMMARY
+────────────────────────────────────────────────────────────────────────────────
+Total Value:     ₹10,000,000
+Cash:            ₹1,225,000
+Invested:        ₹8,775,000
+Total P&L:       ₹+0 (+0.00%)
+Active Positions: 11
+
+────────────────────────────────────────────────────────────────────────────────
+🟢 BUY RECOMMENDATIONS (Sorted by Priority)
+────────────────────────────────────────────────────────────────────────────────
+  SBIN.NS            R_ASRE= 89.8  Price=₹  939.40  Allocation=₹ 1,125,000
+    Reason: BUY: R_ASRE=89.8; F=93/T=88/M=23; Tier N/A; EARLY dip; moderate conviction
+    🤖 AI Note: LLM Error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+  AMBER.NS           R_ASRE= 77.2  Price=₹ 7153.50  Allocation=₹ 1,125,000
+    Reason: BUY: R_ASRE=77.2; F=67/T=87/M=96; Tier N/A; BALANCED dip; moderate conviction
+    🤖 AI Note: LLM Error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+  PRESTIGE.NS        R_ASRE= 80.3  Price=₹ 1342.70  Allocation=₹   825,000
+    Reason: BUY: R_ASRE=80.3; F=82/T=86/M=37; Tier N/A; BALANCED dip; standard conviction
+    🤖 AI Note: LLM Error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+  WAAREEENER.NS      R_ASRE= 83.4  Price=₹ 2997.50  Allocation=₹   825,000
+    Reason: BUY: R_ASRE=83.4; F=82/T=23/M=94; Tier N/A; RECOVERY dip; standard conviction
+    🤖 AI Note: LLM Error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+  MOTHERSON.NS       R_ASRE= 79.4  Price=₹  128.75  Allocation=₹   825,000
+    Reason: BUY: R_ASRE=79.4; F=63/T=94/M=48; Tier N/A; BALANCED dip; standard conviction
+    🤖 AI Note: LLM Error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+  BAJFINANCE.NS      R_ASRE= 77.2  Price=₹  921.10  Allocation=₹   825,000
+    Reason: BUY: R_ASRE=77.2; F=67/T=94/M=52; Tier N/A; BALANCED dip; standard conviction
+    🤖 AI Note: LLM Error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+  TVSMOTOR.NS        R_ASRE= 79.5  Price=₹ 3291.00  Allocation=₹   825,000
+    Reason: BUY: R_ASRE=79.5; F=66/T=87/M=32; Tier N/A; BALANCED dip; standard conviction
+    🤖 AI Note: LLM Error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+  PAYTM.NS           R_ASRE= 85.5  Price=₹ 1105.10  Allocation=₹   600,000
+    Reason: BUY: R_ASRE=85.5; F=58/T=52/M=43; Tier N/A; BALANCED dip; standard conviction
+    🤖 AI Note: LLM Error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+  ETERNAL.NS         R_ASRE= 81.0  Price=₹  241.40  Allocation=₹   600,000
+    Reason: BUY: R_ASRE=81.0; F=66/T=30/M=50; Tier N/A; BALANCED dip; standard conviction
+    🤖 AI Note: LLM Error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+  PTCIL.NS           R_ASRE= 79.4  Price=₹16252.00  Allocation=₹   600,000
+    Reason: BUY: R_ASRE=79.4; F=61/T=36/M=38; Tier N/A; BALANCED dip; standard conviction
+    🤖 AI Note: LLM Error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+  MUTHOOTFIN.NS      R_ASRE= 73.5  Price=₹ 3290.90  Allocation=₹   600,000
+    Reason: BUY: R_ASRE=73.5; F=82/T=5/M=39; Tier N/A; EARLY dip; standard conviction
+    🤖 AI Note: LLM Error: Error code: 400 - {'error': {'message': 'The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+
+────────────────────────────────────────────────────────────────────────────────
+👁️  WATCH LIST (Top 10)
+────────────────────────────────────────────────────────────────────────────────
+  PREMIERENE.NS      R_ASRE= 69.2  Price=₹  986.90
+    WATCH: R_ASRE=69.2; R_ASRE 69.2 below buy threshold 70
+  V2RETAIL.NS        R_ASRE= 68.5  Price=₹  217.32
+    WATCH: R_ASRE=68.5; R_ASRE 68.5 below buy threshold 70
+  SHRIRAMFIN.NS      R_ASRE= 67.6  Price=₹  933.70
+    WATCH: R_ASRE=67.6; R_ASRE 67.6 below buy threshold 70
+
+================================================================================
+DISCLAIMER: Algorithmic output only. Not investment advice.
+For SEBI-registered IA/RA use only.
+================================================================================

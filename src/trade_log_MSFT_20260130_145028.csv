@@ -1,0 +1,53 @@
+Date,Action,Reason,Price,Size,PnL,AI_Explanation
+2021-03-31,BUY (+50%),Entry/Increase,235.77,50%,-,BUY executed based on Entry/Increase
+2021-08-02,BUY (+50%),Entry/Increase,284.82,100%,-,BUY executed based on Entry/Increase
+2021-08-31,BUY (+20%),Entry/Increase,301.88,120%,-,BUY executed based on Entry/Increase
+2021-11-01,SELL (-20%),Reduce Exposure,329.37,100%,-,SELL executed based on Reduce Exposure
+2021-11-30,SELL (-75%),Reduce Exposure,330.59,25%,-,SELL executed based on Reduce Exposure
+2021-12-31,BUY (+25%),Entry/Increase,336.32,50%,-,BUY executed based on Entry/Increase
+2022-01-25,SELL (Risk Exit),Trailing_Stop,288.49,50%,19.01%,SELL executed based on Trailing_Stop
+2022-01-25,BUY (+50%),Entry/Increase,288.49,50%,-,BUY executed based on Entry/Increase
+2022-01-31,SELL (-25%),Reduce Exposure,310.98,25%,-,SELL executed based on Reduce Exposure
+2022-05-02,BUY (+75%),Entry/Increase,284.47,100%,-,BUY executed based on Entry/Increase
+2022-05-09,SELL (Risk Exit),Trailing_Stop,264.58,100%,-8.29%,SELL executed based on Trailing_Stop
+2022-05-09,BUY (+100%),Entry/Increase,264.58,100%,-,BUY executed based on Entry/Increase
+2022-05-31,BUY (+20%),Entry/Increase,271.87,120%,-,BUY executed based on Entry/Increase
+2022-08-01,SELL (-20%),Reduce Exposure,278.01,100%,-,SELL executed based on Reduce Exposure
+2022-08-31,BUY (+20%),Entry/Increase,261.47,120%,-,BUY executed based on Entry/Increase
+2022-09-15,SELL (Risk Exit),Trailing_Stop,245.38,120%,-7.26%,SELL executed based on Trailing_Stop
+2022-09-15,BUY (+120%),Entry/Increase,245.38,120%,-,BUY executed based on Entry/Increase
+2022-09-30,SELL (-70%),Reduce Exposure,232.90,50%,-,SELL executed based on Reduce Exposure
+2022-10-31,SELL (-25%),Reduce Exposure,232.13,25%,-,SELL executed based on Reduce Exposure
+2023-01-03,BUY (+75%),Entry/Increase,239.58,100%,-,BUY executed based on Entry/Increase
+2023-01-31,BUY (+20%),Entry/Increase,247.81,120%,-,BUY executed based on Entry/Increase
+2023-02-28,SELL (-20%),Reduce Exposure,249.42,100%,-,SELL executed based on Reduce Exposure
+2023-05-01,BUY (+20%),Entry/Increase,305.56,120%,-,BUY executed based on Entry/Increase
+2023-05-31,SELL (-70%),Reduce Exposure,328.39,50%,-,SELL executed based on Reduce Exposure
+2023-07-31,BUY (+50%),Entry/Increase,335.92,100%,-,BUY executed based on Entry/Increase
+2023-08-31,SELL (-75%),Reduce Exposure,327.76,25%,-,SELL executed based on Reduce Exposure
+2023-10-02,BUY (+25%),Entry/Increase,321.80,50%,-,BUY executed based on Entry/Increase
+2023-10-31,BUY (+70%),Entry/Increase,338.11,120%,-,BUY executed based on Entry/Increase
+2023-11-30,SELL (-20%),Reduce Exposure,378.91,100%,-,SELL executed based on Reduce Exposure
+2024-01-31,BUY (+20%),Entry/Increase,397.58,120%,-,BUY executed based on Entry/Increase
+2024-02-29,SELL (-70%),Reduce Exposure,413.64,50%,-,SELL executed based on Reduce Exposure
+2024-04-01,BUY (+70%),Entry/Increase,424.57,120%,-,BUY executed based on Entry/Increase
+2024-04-30,SELL (-95%),Reduce Exposure,389.33,25%,-,SELL executed based on Reduce Exposure
+2024-05-31,BUY (+25%),Entry/Increase,415.13,50%,-,BUY executed based on Entry/Increase
+2024-07-01,BUY (+50%),Entry/Increase,456.73,100%,-,BUY executed based on Entry/Increase
+2024-07-31,BUY (+20%),Entry/Increase,418.35,120%,-,BUY executed based on Entry/Increase
+2024-08-05,SELL (Risk Exit),Trailing_Stop,395.15,120%,54.93%,SELL executed based on Trailing_Stop
+2024-08-05,BUY (+120%),Entry/Increase,395.15,120%,-,BUY executed based on Entry/Increase
+2024-09-03,SELL (-95%),Reduce Exposure,409.44,25%,-,SELL executed based on Reduce Exposure
+2024-09-30,BUY (+25%),Entry/Increase,430.30,50%,-,BUY executed based on Entry/Increase
+2024-10-31,BUY (+70%),Entry/Increase,406.35,120%,-,BUY executed based on Entry/Increase
+2024-12-31,SELL (-20%),Reduce Exposure,421.50,100%,-,SELL executed based on Reduce Exposure
+2025-01-31,BUY (+20%),Entry/Increase,415.06,120%,-,BUY executed based on Entry/Increase
+2025-02-28,SELL (-95%),Reduce Exposure,396.99,25%,-,SELL executed based on Reduce Exposure
+2025-03-10,SELL (Risk Exit),Trailing_Stop,380.16,25%,-3.79%,SELL executed based on Trailing_Stop
+2025-03-10,BUY (+25%),Entry/Increase,380.16,25%,-,BUY executed based on Entry/Increase
+2025-04-30,BUY (+95%),Entry/Increase,395.26,120%,-,BUY executed based on Entry/Increase
+2025-06-02,SELL (-20%),Reduce Exposure,461.97,100%,-,SELL executed based on Reduce Exposure
+2025-06-30,SELL (-50%),Reduce Exposure,497.41,50%,-,SELL executed based on Reduce Exposure
+2025-09-02,BUY (+50%),Entry/Increase,505.12,100%,-,BUY executed based on Entry/Increase
+2025-10-31,SELL (-75%),Reduce Exposure,517.81,25%,-,SELL executed based on Reduce Exposure
+2025-12-01,BUY (+25%),Entry/Increase,486.74,50%,-,BUY executed based on Entry/Increase

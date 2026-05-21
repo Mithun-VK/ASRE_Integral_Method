@@ -1,0 +1,1808 @@
+{
+  "run_date": "2026-05-18",
+  "capital_total": 100000.0,
+  "cash": 100000.0,
+  "positions": {},
+  "history": [
+    {
+      "date": "2026-05-18",
+      "ticker": "AMBER.NS",
+      "name": "Amber Enterprises India Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "APARINDS.NS",
+      "name": "Apar Industries Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ATHER.NS",
+      "name": "Ather Energy Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BAJFINANCE.NS",
+      "name": "Bajaj Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BDL.NS",
+      "name": "Bharat Dynamics Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BEL.NS",
+      "name": "Bharat Electronics Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "CGPOWER.NS",
+      "name": "CG Power Industrial Solutions",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ETERNAL.NS",
+      "name": "Eternal Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "FLUOROCHEM.NS",
+      "name": "Gujarat Fluorochemicals Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "GEVERNOVA.NS",
+      "name": "GE Vernova TD India Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "INDUSINDBK.NS",
+      "name": "Indusind Bank Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "JAINRES.NS",
+      "name": "Jain Resource Recycling Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MCX.NS",
+      "name": "Multi Commodity Exchange",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MOTHERSON.NS",
+      "name": "Samvardhana Motherson Intl.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MUTHOOTFIN.NS",
+      "name": "Muthoot Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "OLAELEC.NS",
+      "name": "Ola Electric Mobility Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ONESOURCE.NS",
+      "name": "Onesource Specialty Pharma",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PAYTM.NS",
+      "name": "One97 Communications Paytm",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PREMIERENE.NS",
+      "name": "Premier Energies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PRESTIGE.NS",
+      "name": "Prestige Estates Projects Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PTCIL.NS",
+      "name": "PTC Industries Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "RELIGARE.NS",
+      "name": "Religare Enterprises Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SBIN.NS",
+      "name": "State Bank of India",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SHRIRAMFIN.NS",
+      "name": "Shriram Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SUZLON.NS",
+      "name": "Suzlon Energy Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "TVSMOTOR.NS",
+      "name": "TVS Motor Company Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "UNIMECH.NS",
+      "name": "Billionbrains Garage Ventures",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "V2RETAIL.NS",
+      "name": "V2 Retail Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "WAAREEENER.NS",
+      "name": "Waaree Energies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ZENTEC.NS",
+      "name": "Zen Technologies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: assess_fundamental_data_quality() got an unexpected keyword argument 'requiredquarters'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "AMBER.NS",
+      "name": "Amber Enterprises India Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "APARINDS.NS",
+      "name": "Apar Industries Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ATHER.NS",
+      "name": "Ather Energy Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BAJFINANCE.NS",
+      "name": "Bajaj Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BDL.NS",
+      "name": "Bharat Dynamics Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BEL.NS",
+      "name": "Bharat Electronics Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "CGPOWER.NS",
+      "name": "CG Power Industrial Solutions",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ETERNAL.NS",
+      "name": "Eternal Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "FLUOROCHEM.NS",
+      "name": "Gujarat Fluorochemicals Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "GEVERNOVA.NS",
+      "name": "GE Vernova TD India Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "INDUSINDBK.NS",
+      "name": "Indusind Bank Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "JAINRES.NS",
+      "name": "Jain Resource Recycling Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MCX.NS",
+      "name": "Multi Commodity Exchange",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MOTHERSON.NS",
+      "name": "Samvardhana Motherson Intl.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MUTHOOTFIN.NS",
+      "name": "Muthoot Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "OLAELEC.NS",
+      "name": "Ola Electric Mobility Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ONESOURCE.NS",
+      "name": "Onesource Specialty Pharma",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PAYTM.NS",
+      "name": "One97 Communications Paytm",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PREMIERENE.NS",
+      "name": "Premier Energies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PRESTIGE.NS",
+      "name": "Prestige Estates Projects Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PTCIL.NS",
+      "name": "PTC Industries Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "RELIGARE.NS",
+      "name": "Religare Enterprises Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SBIN.NS",
+      "name": "State Bank of India",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SHRIRAMFIN.NS",
+      "name": "Shriram Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SUZLON.NS",
+      "name": "Suzlon Energy Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "TVSMOTOR.NS",
+      "name": "TVS Motor Company Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "UNIMECH.NS",
+      "name": "Billionbrains Garage Ventures",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "V2RETAIL.NS",
+      "name": "V2 Retail Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "WAAREEENER.NS",
+      "name": "Waaree Energies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ZENTEC.NS",
+      "name": "Zen Technologies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'DataLoader' object has no attribute 'loadstockdata'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "AMBER.NS",
+      "name": "Amber Enterprises India Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 8476.5
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "APARINDS.NS",
+      "name": "Apar Industries Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 12650.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ATHER.NS",
+      "name": "Ather Energy Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BAJFINANCE.NS",
+      "name": "Bajaj Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 910.45
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BDL.NS",
+      "name": "Bharat Dynamics Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 1325.4
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BEL.NS",
+      "name": "Bharat Electronics Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 423.65
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "CGPOWER.NS",
+      "name": "CG Power Industrial Solutions",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 838.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ETERNAL.NS",
+      "name": "Eternal Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 241.18
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "FLUOROCHEM.NS",
+      "name": "Gujarat Fluorochemicals Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3713.5
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "GEVERNOVA.NS",
+      "name": "GE Vernova TD India Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "INDUSINDBK.NS",
+      "name": "Indusind Bank Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 886.4
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "JAINRES.NS",
+      "name": "Jain Resource Recycling Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MCX.NS",
+      "name": "Multi Commodity Exchange",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3391.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MOTHERSON.NS",
+      "name": "Samvardhana Motherson Intl.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 129.92
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MUTHOOTFIN.NS",
+      "name": "Muthoot Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3311.4
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "OLAELEC.NS",
+      "name": "Ola Electric Mobility Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 35.68
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ONESOURCE.NS",
+      "name": "Onesource Specialty Pharma",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PAYTM.NS",
+      "name": "One97 Communications Paytm",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 1131.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PREMIERENE.NS",
+      "name": "Premier Energies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 981.6
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PRESTIGE.NS",
+      "name": "Prestige Estates Projects Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 1342.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PTCIL.NS",
+      "name": "PTC Industries Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 16788.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "RELIGARE.NS",
+      "name": "Religare Enterprises Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 221.93
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SBIN.NS",
+      "name": "State Bank of India",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 963.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SHRIRAMFIN.NS",
+      "name": "Shriram Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 937.9
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SUZLON.NS",
+      "name": "Suzlon Energy Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 53.84
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "TVSMOTOR.NS",
+      "name": "TVS Motor Company Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3466.8
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "UNIMECH.NS",
+      "name": "Billionbrains Garage Ventures",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 941.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "V2RETAIL.NS",
+      "name": "V2 Retail Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 228.24
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "WAAREEENER.NS",
+      "name": "Waaree Energies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3022.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ZENTEC.NS",
+      "name": "Zen Technologies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: compute_complete_asre() got an unexpected keyword argument 'fundamentalsconfig'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 1554.9
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "AMBER.NS",
+      "name": "Amber Enterprises India Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 8476.5
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "APARINDS.NS",
+      "name": "Apar Industries Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 12650.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ATHER.NS",
+      "name": "Ather Energy Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BAJFINANCE.NS",
+      "name": "Bajaj Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 910.45
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BDL.NS",
+      "name": "Bharat Dynamics Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 1325.4
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BEL.NS",
+      "name": "Bharat Electronics Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 423.65
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "CGPOWER.NS",
+      "name": "CG Power Industrial Solutions",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 838.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ETERNAL.NS",
+      "name": "Eternal Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 241.18
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "FLUOROCHEM.NS",
+      "name": "Gujarat Fluorochemicals Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3713.5
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "GEVERNOVA.NS",
+      "name": "GE Vernova TD India Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "INDUSINDBK.NS",
+      "name": "Indusind Bank Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 886.4
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "JAINRES.NS",
+      "name": "Jain Resource Recycling Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MCX.NS",
+      "name": "Multi Commodity Exchange",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3391.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MOTHERSON.NS",
+      "name": "Samvardhana Motherson Intl.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 129.92
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MUTHOOTFIN.NS",
+      "name": "Muthoot Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3311.4
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "OLAELEC.NS",
+      "name": "Ola Electric Mobility Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 35.68
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ONESOURCE.NS",
+      "name": "Onesource Specialty Pharma",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PAYTM.NS",
+      "name": "One97 Communications Paytm",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 1131.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PREMIERENE.NS",
+      "name": "Premier Energies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 981.6
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PRESTIGE.NS",
+      "name": "Prestige Estates Projects Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 1342.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PTCIL.NS",
+      "name": "PTC Industries Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 16788.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "RELIGARE.NS",
+      "name": "Religare Enterprises Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 221.93
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SBIN.NS",
+      "name": "State Bank of India",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 963.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SHRIRAMFIN.NS",
+      "name": "Shriram Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 937.9
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SUZLON.NS",
+      "name": "Suzlon Energy Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 53.84
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "TVSMOTOR.NS",
+      "name": "TVS Motor Company Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3466.8
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "UNIMECH.NS",
+      "name": "Billionbrains Garage Ventures",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 941.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "V2RETAIL.NS",
+      "name": "V2 Retail Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 228.24
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "WAAREEENER.NS",
+      "name": "Waaree Energies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3022.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ZENTEC.NS",
+      "name": "Zen Technologies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 1554.9
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "AMBER.NS",
+      "name": "Amber Enterprises India Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 8476.5
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "APARINDS.NS",
+      "name": "Apar Industries Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 12650.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ATHER.NS",
+      "name": "Ather Energy Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BAJFINANCE.NS",
+      "name": "Bajaj Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 910.45
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BDL.NS",
+      "name": "Bharat Dynamics Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 1325.4
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BEL.NS",
+      "name": "Bharat Electronics Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 423.65
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "CGPOWER.NS",
+      "name": "CG Power Industrial Solutions",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 838.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ETERNAL.NS",
+      "name": "Eternal Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 241.18
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "FLUOROCHEM.NS",
+      "name": "Gujarat Fluorochemicals Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3713.5
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "GEVERNOVA.NS",
+      "name": "GE Vernova TD India Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "INDUSINDBK.NS",
+      "name": "Indusind Bank Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 886.4
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "JAINRES.NS",
+      "name": "Jain Resource Recycling Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MCX.NS",
+      "name": "Multi Commodity Exchange",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3391.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MOTHERSON.NS",
+      "name": "Samvardhana Motherson Intl.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 129.92
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MUTHOOTFIN.NS",
+      "name": "Muthoot Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3311.4
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "OLAELEC.NS",
+      "name": "Ola Electric Mobility Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 35.68
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ONESOURCE.NS",
+      "name": "Onesource Specialty Pharma",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PAYTM.NS",
+      "name": "One97 Communications Paytm",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 1131.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PREMIERENE.NS",
+      "name": "Premier Energies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 981.6
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PRESTIGE.NS",
+      "name": "Prestige Estates Projects Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 1342.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PTCIL.NS",
+      "name": "PTC Industries Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 16788.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "RELIGARE.NS",
+      "name": "Religare Enterprises Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 221.93
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SBIN.NS",
+      "name": "State Bank of India",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 963.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SHRIRAMFIN.NS",
+      "name": "Shriram Finance Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 937.9
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SUZLON.NS",
+      "name": "Suzlon Energy Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 53.84
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "TVSMOTOR.NS",
+      "name": "TVS Motor Company Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3466.8
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "UNIMECH.NS",
+      "name": "Billionbrains Garage Ventures",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 941.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "V2RETAIL.NS",
+      "name": "V2 Retail Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 228.24
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "WAAREEENER.NS",
+      "name": "Waaree Energies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 3022.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ZENTEC.NS",
+      "name": "Zen Technologies Ltd.",
+      "action": "SKIP",
+      "reason": "Error: 'CompositeConfig' object has no attribute 'wf_base'",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": 1554.9
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "AMBER.NS",
+      "name": "Amber Enterprises India Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 8476.5
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "APARINDS.NS",
+      "name": "Apar Industries Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 12650.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BAJFINANCE.NS",
+      "name": "Bajaj Finance Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 910.45
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BDL.NS",
+      "name": "Bharat Dynamics Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 1325.4
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "BEL.NS",
+      "name": "Bharat Electronics Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 423.65
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "CGPOWER.NS",
+      "name": "CG Power Industrial Solutions",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 838.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ETERNAL.NS",
+      "name": "Eternal Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 241.18
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "FLUOROCHEM.NS",
+      "name": "Gujarat Fluorochemicals Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 3713.5
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "INDUSINDBK.NS",
+      "name": "Indusind Bank Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 886.4
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MCX.NS",
+      "name": "Multi Commodity Exchange",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 3391.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MOTHERSON.NS",
+      "name": "Samvardhana Motherson Intl.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 129.92
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "MUTHOOTFIN.NS",
+      "name": "Muthoot Finance Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 3311.4
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "OLAELEC.NS",
+      "name": "Ola Electric Mobility Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 35.68
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PAYTM.NS",
+      "name": "One97 Communications Paytm",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 1131.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PREMIERENE.NS",
+      "name": "Premier Energies Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 981.6
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PRESTIGE.NS",
+      "name": "Prestige Estates Projects Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 1342.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "PTCIL.NS",
+      "name": "PTC Industries Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 16788.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "RELIGARE.NS",
+      "name": "Religare Enterprises Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 221.93
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SBIN.NS",
+      "name": "State Bank of India",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 963.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SHRIRAMFIN.NS",
+      "name": "Shriram Finance Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 937.9
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "SUZLON.NS",
+      "name": "Suzlon Energy Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 53.84
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "TVSMOTOR.NS",
+      "name": "TVS Motor Company Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 3466.8
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "UNIMECH.NS",
+      "name": "Billionbrains Garage Ventures",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 941.2
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "V2RETAIL.NS",
+      "name": "V2 Retail Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 228.24
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "WAAREEENER.NS",
+      "name": "Waaree Energies Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 3022.0
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ZENTEC.NS",
+      "name": "Zen Technologies Ltd.",
+      "action": "SKIP",
+      "reason": "R_ASRE is NaN",
+      "rasre": NaN,
+      "rfinal": NaN,
+      "price": 1554.9
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ATHER.NS",
+      "name": "Ather Energy Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "GEVERNOVA.NS",
+      "name": "GE Vernova TD India Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "JAINRES.NS",
+      "name": "Jain Resource Recycling Ltd.",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    },
+    {
+      "date": "2026-05-18",
+      "ticker": "ONESOURCE.NS",
+      "name": "Onesource Specialty Pharma",
+      "action": "SKIP",
+      "reason": "Error: Insufficient historical data available",
+      "rasre": 50.0,
+      "rfinal": 50.0,
+      "price": NaN
+    }
+  ]
+}

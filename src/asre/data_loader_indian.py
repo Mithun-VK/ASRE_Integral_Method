@@ -429,11 +429,15 @@ class DataLoader:
                 / qf["shareholders_equity"].replace(0, np.nan)
             ) * 100
             qf["roe"] = qf["roe"].fillna(15.0)
+        else:
+            qf["roe"] = 15.0
 
         # D/E
         if "total_debt" in qf.columns and "shareholders_equity" in qf.columns:
             qf["de"] = qf["total_debt"] / qf["shareholders_equity"].replace(0, np.nan)
             qf["de"] = qf["de"].fillna(0.5)
+        else:
+            qf["de"] = 0.5
 
         # Revenue Growth YoY
         if "revenue" in qf.columns:
@@ -448,6 +452,8 @@ class DataLoader:
                 )
                 qf["revenue_growth_yoy"] = qf["revenue"].pct_change(1) * 100
             qf["revenue_growth_yoy"] = qf["revenue_growth_yoy"].fillna(10.0)
+        else:
+            qf["revenue_growth_yoy"] = 10.0
 
         # Profit Margin
         if "net_income" in qf.columns and "revenue" in qf.columns:

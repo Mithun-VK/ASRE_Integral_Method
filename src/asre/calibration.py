@@ -46,15 +46,16 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_WEIGHTS     = np.array([0.40, 0.30, 0.30])
 
-# FIX B1: AUC_GATE corrected from 1.0 → 0.60.
-# 1.0 is perfect classification — mathematically impossible on market data.
-# Every stock therefore fell back to DEFAULT_WEIGHTS, making walk-forward
-# calibration a no-op. 0.60 is the practical "better-than-noise" floor
-# for financial return prediction; weights are trusted above this threshold.
-AUC_GATE            = 0.60   # was 1.0
+AUC_GATE            = 0.55   # was 1.0
 
-# FIX B1: soft transition zone — blend rather than hard-cliff fallback
-AUC_BLEND_THRESHOLD = 0.55   # AUC in [0.55, 0.60) → proportional blend
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+DEFAULT_WEIGHTS = np.array([0.40, 0.30, 0.30])
+
+AUC_GATE = 0.55              # full MLE weights only if AUC >= 0.55
+AUC_BLEND_THRESHOLD = 0.52   # AUC in [0.52, 0.55) -> proportional blend
 
 # B2-Rb: minimum composite variance (pts²) required to justify a logistic fit.
 # Rationale: composite = 0.4*F + 0.3*T + 0.3*M over a training window.
@@ -63,14 +64,13 @@ AUC_BLEND_THRESHOLD = 0.55   # AUC in [0.55, 0.60) → proportional blend
 # Threshold derivation: empirically validated on MARUTI walk-forward folds
 # where AUC=0.497–0.514 correlated with composite std < 2.5 pts in window.
 # Set to 8.0 to include a small safety margin above the noise floor.
-COMPOSITE_VARIANCE_FLOOR = 8.0   # ← B2-Rb NEW
+COMPOSITE_VARIANCE_FLOOR = 8.0
 
 # WeightSource labels — stored in weight_df['weight_source'] for auditability
 _WS_MLE      = 'MLE'       # logistic calibration passed AUC gate
-_WS_BLENDED  = 'BLENDED'   # FIX B1: AUC in blend zone — partial learning
+_WS_BLENDED  = 'BLENDED'   # AUC in blend zone — partial learning
 _WS_DEFAULT  = 'DEFAULT'   # warm-up / AUC below blend threshold
 _WS_FALLBACK = 'FALLBACK'  # exception during fit
-
 
 # ---------------------------------------------------------------------------
 # FIX B1: Blend helper (UNCHANGED)

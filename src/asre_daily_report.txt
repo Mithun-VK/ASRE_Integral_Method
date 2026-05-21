@@ -1,0 +1,37 @@
+================================================================================
+ASRE DAILY PORTFOLIO MANAGER REPORT
+================================================================================
+
+Run ID: def42e3a-b58c-49e3-9003-53ea4eb89508
+Timestamp UTC: 2026-05-17T20:20:27.345854Z
+Engine: ASRE (package)
+Mode: IA
+Capital Total: ₹100,000.00
+Cash: ₹100,000.00
+Open Positions: 0
+
+ACTION SUMMARY
+--------------------------------------------------------------------------------
+BUY   : 0
+SELL  : 0
+HOLD  : 0
+WATCH : 0
+
+TOP SIGNALS
+--------------------------------------------------------------------------------
+AMBER.NS           Action=SKIP  R_ASRE=  nan R_Final=  nan Dip=BALANCED   Price=   8476.50
+APARINDS.NS        Action=SKIP  R_ASRE=  nan R_Final=  nan Dip=BALANCED   Price=  12650.00
+BAJFINANCE.NS      Action=SKIP  R_ASRE=  nan R_Final=  nan Dip=BALANCED   Price=    910.45
+BDL.NS             Action=SKIP  R_ASRE=  nan R_Final=  nan Dip=BALANCED   Price=   1325.40
+BEL.NS             Action=SKIP  R_ASRE=  nan R_Final=  nan Dip=BALANCED   Price=    423.65
+CGPOWER.NS         Action=SKIP  R_ASRE=  nan R_Final=  nan Dip=BALANCED   Price=    838.20
+ETERNAL.NS         Action=SKIP  R_ASRE=  nan R_Final=  nan Dip=BALANCED   Price=    241.18
+FLUOROCHEM.NS      Action=SKIP  R_ASRE=  nan R_Final=  nan Dip=BALANCED   Price=   3713.50
+INDUSINDBK.NS      Action=SKIP  R_ASRE=  nan R_Final=  nan Dip=BALANCED   Price=    886.40
+MCX.NS             Action=SKIP  R_ASRE=  nan R_Final=  nan Dip=BALANCED   Price=   3391.00
+
+SEBI COMPLIANCE DISCLOSURE
+--------------------------------------------------------------------------------
+This output is produced by the ASRE quantitative engine and does NOT constitute
+investment advice under SEBI IA Regulations 2013 or SEBI RA Regulations 2014.
+Use ONLY within SEBI-registered IA/RA workflows.

@@ -1,0 +1,31 @@
+﻿ticker,name,action,reason,position_status,rasre,rfinal,fscore,tscore,mscore,dipstage,dipqualityscore,entrytimingscore,currentprice,capitalallocated,sharesheld,error
+AMBER.NS,Amber Enterprises India Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,8476.5,0.0,0.0,
+APARINDS.NS,Apar Industries Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,12650.0,0.0,0.0,
+BAJFINANCE.NS,Bajaj Finance Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,910.45,0.0,0.0,
+BDL.NS,Bharat Dynamics Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,1325.4,0.0,0.0,
+BEL.NS,Bharat Electronics Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,423.65,0.0,0.0,
+CGPOWER.NS,CG Power Industrial Solutions,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,838.2,0.0,0.0,
+ETERNAL.NS,Eternal Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,241.18,0.0,0.0,
+FLUOROCHEM.NS,Gujarat Fluorochemicals Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,3713.5,0.0,0.0,
+INDUSINDBK.NS,Indusind Bank Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,886.4,0.0,0.0,
+MCX.NS,Multi Commodity Exchange,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,3391.0,0.0,0.0,
+MOTHERSON.NS,Samvardhana Motherson Intl.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,129.92,0.0,0.0,
+MUTHOOTFIN.NS,Muthoot Finance Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,3311.4,0.0,0.0,
+OLAELEC.NS,Ola Electric Mobility Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,35.68,0.0,0.0,
+PAYTM.NS,One97 Communications Paytm,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,1131.2,0.0,0.0,
+PREMIERENE.NS,Premier Energies Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,981.6,0.0,0.0,
+PRESTIGE.NS,Prestige Estates Projects Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,1342.2,0.0,0.0,
+PTCIL.NS,PTC Industries Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,16788.0,0.0,0.0,
+RELIGARE.NS,Religare Enterprises Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,221.93,0.0,0.0,
+SBIN.NS,State Bank of India,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,963.2,0.0,0.0,
+SHRIRAMFIN.NS,Shriram Finance Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,937.9,0.0,0.0,
+SUZLON.NS,Suzlon Energy Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,53.84,0.0,0.0,
+TVSMOTOR.NS,TVS Motor Company Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,3466.8,0.0,0.0,
+UNIMECH.NS,Billionbrains Garage Ventures,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,941.2,0.0,0.0,
+V2RETAIL.NS,V2 Retail Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,228.24,0.0,0.0,
+WAAREEENER.NS,Waaree Energies Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,3022.0,0.0,0.0,
+ZENTEC.NS,Zen Technologies Ltd.,SKIP,R_ASRE is NaN,FLAT,,,,,,BALANCED,,,1554.9,0.0,0.0,
+ATHER.NS,Ather Energy Ltd.,SKIP,Error: Insufficient historical data available,FLAT,50.0,50.0,50.0,50.0,50.0,UNKNOWN,,,,0.0,0.0,Insufficient historical data available
+GEVERNOVA.NS,GE Vernova TD India Ltd.,SKIP,Error: Insufficient historical data available,FLAT,50.0,50.0,50.0,50.0,50.0,UNKNOWN,,,,0.0,0.0,Insufficient historical data available
+JAINRES.NS,Jain Resource Recycling Ltd.,SKIP,Error: Insufficient historical data available,FLAT,50.0,50.0,50.0,50.0,50.0,UNKNOWN,,,,0.0,0.0,Insufficient historical data available
+ONESOURCE.NS,Onesource Specialty Pharma,SKIP,Error: Insufficient historical data available,FLAT,50.0,50.0,50.0,50.0,50.0,UNKNOWN,,,,0.0,0.0,Insufficient historical data available

@@ -1,0 +1,31 @@
+﻿ticker,name,origweight,fscore,tscore,mscore,rfinal,rmedallion,rasre,weightf,weightt,weightm,dipqualityscore,entrytimingscore,riskreward,kalmancovariance,qualitytier,stockcategory,marketcontext,scorefreezeflag,dipstage,signal,dataqualityscore,currentprice,ret1m,ret6m,ret1y,action,actionreason,positionstatus,capitalallocated,sharesheld,processingtime,datapoints,error
+AMBER.NS,Amber Enterprises India Ltd.,3.34,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,8476.5,9.878,18.644,35.907,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.527492523193359,494,
+APARINDS.NS,Apar Industries Ltd.,4.24,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,12650.0,12.28,48.283,100.778,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,3.9513156414031982,494,
+BAJFINANCE.NS,Bajaj Finance Ltd.,2.63,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,910.45,0.502,-9.426,0.954,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.948760986328125,494,
+BDL.NS,Bharat Dynamics Ltd.,2.49,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,1325.4,-2.501,-13.565,-15.574,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.938633680343628,494,
+BEL.NS,Bharat Electronics Ltd.,4.32,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,423.65,-7.023,-0.854,31.242,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,3.9616613388061523,494,
+CGPOWER.NS,CG Power Industrial Solutions,5.0,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,838.2,10.888,14.36,29.793,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.633545637130737,494,
+ETERNAL.NS,Eternal Ltd.,5.53,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,241.18,-2.226,-21.209,4.948,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.551813364028931,489,
+FLUOROCHEM.NS,Gujarat Fluorochemicals Ltd.,3.03,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,3713.5,9.974,6.459,-3.56,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.841012239456177,494,
+INDUSINDBK.NS,Indusind Bank Ltd.,0.46,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,886.4,4.541,7.299,12.416,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,3.6329474449157715,494,
+MCX.NS,Multi Commodity Exchange,5.23,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,3391.0,18.475,78.568,179.716,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.749023914337158,494,
+MOTHERSON.NS,Samvardhana Motherson Intl.,3.17,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,129.92,5.781,23.194,34.344,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.644519090652466,494,
+MUTHOOTFIN.NS,Muthoot Finance Ltd.,5.49,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,3311.4,-7.451,-2.298,46.756,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.724281549453735,494,
+OLAELEC.NS,Ola Electric Mobility Ltd.,1.71,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,35.68,-7.756,-16.752,-28.137,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.081698656082153,438,
+PAYTM.NS,One97 Communications Paytm,3.43,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,1131.2,-1.536,-15.113,30.616,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.160102605819702,494,
+PREMIERENE.NS,Premier Energies Ltd.,3.84,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,981.6,-2.143,-4.243,-0.904,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,3.048999547958374,422,
+PRESTIGE.NS,Prestige Estates Projects Ltd.,2.51,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,1342.2,0.321,-23.678,-1.75,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.795909643173218,494,
+PTCIL.NS,PTC Industries Ltd.,4.32,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,16788.0,5.089,-3.111,36.643,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,3.7989327907562256,493,
+RELIGARE.NS,Religare Enterprises Ltd.,1.43,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,221.93,0.767,-12.849,5.105,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.51020073890686,493,
+SBIN.NS,State Bank of India,0.96,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,963.2,-9.741,1.039,20.152,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,3.987233877182007,494,
+SHRIRAMFIN.NS,Shriram Finance Ltd.,4.6,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,937.9,-8.296,12.688,45.197,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,3.748558282852173,494,
+SUZLON.NS,Suzlon Energy Ltd.,2.69,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,53.84,7.144,-6.883,-5.461,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,5.0186779499053955,494,
+TVSMOTOR.NS,TVS Motor Company Ltd.,3.31,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,3466.8,-7.729,-0.213,25.577,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.780639886856079,494,
+UNIMECH.NS,Billionbrains Garage Ventures,4.18,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,941.2,3.021,-5.701,2.193,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,2.339991807937622,340,
+V2RETAIL.NS,V2 Retail Ltd.,2.07,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,228.24,17.389,-0.092,33.779,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.879207134246826,494,
+WAAREEENER.NS,Waaree Energies Ltd.,4.76,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,3022.0,-12.121,-8.938,12.816,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,2.7213568687438965,384,
+ZENTEC.NS,Zen Technologies Ltd.,2.99,,,,,,,0.4,0.3,0.3,,,,,N/A,N/A,N/A,,BALANCED,Unknown,,1554.9,2.007,12.308,5.296,SKIP,R_ASRE is NaN,FLAT,0.0,0.0,4.879260778427124,494,
+ATHER.NS,Ather Energy Ltd.,3.46,50.0,50.0,50.0,50.0,50.0,50.0,,,,,,,,N/A,N/A,N/A,,UNKNOWN,No data (recent IPO/unlisted),,,,,,SKIP,Error: Insufficient historical data available,FLAT,0.0,0.0,0.0,0,Insufficient historical data available
+GEVERNOVA.NS,GE Vernova TD India Ltd.,1.6,50.0,50.0,50.0,50.0,50.0,50.0,,,,,,,,N/A,N/A,N/A,,UNKNOWN,No data (recent IPO/unlisted),,,,,,SKIP,Error: Insufficient historical data available,FLAT,0.0,0.0,0.0,0,Insufficient historical data available
+JAINRES.NS,Jain Resource Recycling Ltd.,2.24,50.0,50.0,50.0,50.0,50.0,50.0,,,,,,,,N/A,N/A,N/A,,UNKNOWN,No data (recent IPO/unlisted),,,,,,SKIP,Error: Insufficient historical data available,FLAT,0.0,0.0,0.0,0,Insufficient historical data available
+ONESOURCE.NS,Onesource Specialty Pharma,3.82,50.0,50.0,50.0,50.0,50.0,50.0,,,,,,,,N/A,N/A,N/A,,UNKNOWN,No data (recent IPO/unlisted),,,,,,SKIP,Error: Insufficient historical data available,FLAT,0.0,0.0,0.0,0,Insufficient historical data available

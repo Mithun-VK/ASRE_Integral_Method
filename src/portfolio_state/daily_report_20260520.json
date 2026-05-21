@@ -1,0 +1,246 @@
+{
+  "run_id": "9100bb6f-68a4-41f8-8ccf-f5395252b90a",
+  "date": "2026-05-20",
+  "mode": "IA",
+  "dry_run": false,
+  "portfolio": {
+    "total_value": 10071127.971977308,
+    "cash": 1225357.7981651379,
+    "invested": 8775000.0,
+    "total_pnl": 71127.97197730839,
+    "total_pnl_pct": 0.7112797197730839,
+    "active_positions": 11
+  },
+  "actions": {
+    "buy": [
+      {
+        "ticker": "V2RETAIL.NS",
+        "name": "V2 Retail",
+        "action": "BUY",
+        "r_asre": 71.8,
+        "current_price": 226.03,
+        "reason": "BUY: R_ASRE=71.8; F=82/T=22/M=100; Tier N/A; RECOVERY dip; standard conviction",
+        "priority": 20,
+        "suggested_allocation": 825000.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      }
+    ],
+    "sell": [
+      {
+        "ticker": "WAAREEENER.NS",
+        "name": "Waaree Energies Ltd.",
+        "action": "SELL",
+        "r_asre": 20.0,
+        "current_price": 2998.8,
+        "reason": "SELL: R_ASRE 20.0 dropped below sell floor 45; R_ASRE=20.0; F=82/T=16/M=94",
+        "priority": 11,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      }
+    ],
+    "hold": [
+      {
+        "ticker": "ETERNAL.NS",
+        "name": "Eternal Ltd.",
+        "action": "HOLD",
+        "r_asre": 78.0,
+        "current_price": 247.21,
+        "reason": "HOLD: score stable at 78.0; drop from prior=3.0pts; F=66/T=24/M=47; technicals intact",
+        "priority": 99,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      },
+      {
+        "ticker": "MUTHOOTFIN.NS",
+        "name": "Muthoot Finance Ltd.",
+        "action": "HOLD",
+        "r_asre": 73.1,
+        "current_price": 3303.6,
+        "reason": "HOLD: score stable at 73.1; drop from prior=0.4pts; F=82/T=5/M=39; technicals intact",
+        "priority": 99,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      },
+      {
+        "ticker": "PTCIL.NS",
+        "name": "PTC Industries Ltd.",
+        "action": "HOLD",
+        "r_asre": 80.0,
+        "current_price": 16221.0,
+        "reason": "HOLD: score stable at 80.0; drop from prior=-0.6pts; F=61/T=38/M=38; technicals intact",
+        "priority": 99,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      },
+      {
+        "ticker": "PAYTM.NS",
+        "name": "Paytm",
+        "action": "HOLD",
+        "r_asre": 84.2,
+        "current_price": 1121.4,
+        "reason": "HOLD: score stable at 84.2; drop from prior=1.3pts; F=58/T=41/M=42; technicals intact",
+        "priority": 99,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      },
+      {
+        "ticker": "AMBER.NS",
+        "name": "Amber Enterprises",
+        "action": "HOLD",
+        "r_asre": 76.2,
+        "current_price": 7128.5,
+        "reason": "HOLD: score stable at 76.2; drop from prior=1.0pts; F=67/T=91/M=95; technicals intact",
+        "priority": 99,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      },
+      {
+        "ticker": "TVSMOTOR.NS",
+        "name": "TVS Motor Company",
+        "action": "HOLD",
+        "r_asre": 80.6,
+        "current_price": 3283.4,
+        "reason": "HOLD: score stable at 80.6; drop from prior=-1.1pts; F=67/T=88/M=32; technicals intact",
+        "priority": 99,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      },
+      {
+        "ticker": "MOTHERSON.NS",
+        "name": "Motherson International",
+        "action": "HOLD",
+        "r_asre": 77.6,
+        "current_price": 131.49,
+        "reason": "HOLD: score stable at 77.6; drop from prior=1.8pts; F=62/T=94/M=47; technicals intact",
+        "priority": 99,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      },
+      {
+        "ticker": "BAJFINANCE.NS",
+        "name": "Bajaj Finance",
+        "action": "HOLD",
+        "r_asre": 75.8,
+        "current_price": 923.55,
+        "reason": "HOLD: score stable at 75.8; drop from prior=1.4pts; F=67/T=95/M=49; technicals intact",
+        "priority": 99,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      },
+      {
+        "ticker": "PRESTIGE.NS",
+        "name": "Prestige Estates",
+        "action": "HOLD",
+        "r_asre": 78.2,
+        "current_price": 1377.1,
+        "reason": "HOLD: score stable at 78.2; drop from prior=2.1pts; F=82/T=90/M=36; technicals intact",
+        "priority": 99,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      },
+      {
+        "ticker": "SBIN.NS",
+        "name": "State Bank of India",
+        "action": "HOLD",
+        "r_asre": 79.2,
+        "current_price": 948.8,
+        "reason": "HOLD: score stable at 79.2; drop from prior=10.6pts; F=66/T=86/M=23; technicals intact",
+        "priority": 99,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      }
+    ],
+    "watch": [
+      {
+        "ticker": "PREMIERENE.NS",
+        "name": "Premier Energies Ltd.",
+        "action": "WATCH",
+        "r_asre": 68.7,
+        "current_price": 983.1,
+        "reason": "WATCH: R_ASRE=68.7; R_ASRE 68.7 below buy threshold 70",
+        "priority": 50,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      },
+      {
+        "ticker": "SHRIRAMFIN.NS",
+        "name": "Shriram Finance Ltd.",
+        "action": "WATCH",
+        "r_asre": 67.6,
+        "current_price": 927.35,
+        "reason": "WATCH: R_ASRE=67.6; R_ASRE 67.6 below buy threshold 70",
+        "priority": 50,
+        "suggested_allocation": 0.0,
+        "explanation": "",
+        "rotation_sell_of": "",
+        "rotation_buy_of": "",
+        "capital_haircut_used": 0.0
+      }
+    ]
+  },
+  "rotation_swaps": [],
+  "transactions": [
+    {
+      "date": "2026-05-20",
+      "action": "SELL",
+      "ticker": "WAAREEENER.NS",
+      "name": "Waaree Energies Ltd.",
+      "quantity": 275.22935779816515,
+      "price": 2998.8,
+      "value": 825357.7981651378,
+      "reason": "SELL: R_ASRE 20.0 dropped below sell floor 45; R_ASRE=20.0; F=82/T=16/M=94 | P&L: \u20b9+358",
+      "r_asre": 20.0
+    },
+    {
+      "date": "2026-05-20",
+      "action": "BUY",
+      "ticker": "V2RETAIL.NS",
+      "name": "V2 Retail",
+      "quantity": 3649.9579701809494,
+      "price": 226.03,
+      "value": 825000.0,
+      "reason": "BUY: R_ASRE=71.8; F=82/T=22/M=100; Tier N/A; RECOVERY dip; standard conviction",
+      "r_asre": 71.8
+    }
+  ],
+  "score_hash": "39c1c2dcee52d4776a7df032d123cece"
+}

@@ -1,0 +1,88 @@
+ASRE Hash Chain Verification Report
+================================================================================
+Generated       : 2026-03-09T19:29:54.467591+00:00Z
+Ledger path     : C:\Users\Mithun\.asre\ledger.jsonl
+Total entries   : 36
+Parse errors    : 0
+Chain integrity : VALID
+Ledger version  : 1.0
+
+SEBI Retention Requirement: 5 years from date of generation.
+Algorithm: SHA-256. Encoding: UTF-8. Format: JSONL, sort_keys=True.
+
+────────────────────────────────────────────────────────────────────────────────
+#     Timestamp              Run ID     Mode  Tickers                        PDFs  Hash (first 20)        Prev Hash (first 20)   OK
+────────────────────────────────────────────────────────────────────────────────
+1     2026-03-02T05:23:17Z   test-123   IA    RELIANCE.NS                    0     c3a96f3aad510a05b767   GENESIS                OK
+2     2026-03-02T05:58:58Z   b097d2e9   IA    RELIANCE.NS                    0     084baaa613f352fc494f   c3a96f3aad510a05b767   OK
+3     2026-03-02T05:59:07Z   0f3b861f   RA    INFY.NS                        0     1ccb9d7b703476becaa8   084baaa613f352fc494f   OK
+4     2026-03-02T06:00:27Z   1441adbf   IA    HDFCBANK.NS, INFY.NS, REL...   0     47c54c8cd565a38a3130   1ccb9d7b703476becaa8   OK
+5     2026-03-02T06:01:01Z   56af2e81   RA    INFY.NS, RELIANCE.NS, TCS.NS   0     42639631415b7dde109e   47c54c8cd565a38a3130   OK
+6     2026-03-02T06:01:18Z   2bddbb99   IA    RELIANCE.NS                    1     243fc57046919fb258aa   42639631415b7dde109e   OK
+7     2026-03-02T06:04:27Z   a66cbb7c   RA    INFY.NS, RELIANCE.NS, TCS.NS   0     0235f8dfd1162528865a   243fc57046919fb258aa   OK
+8     2026-03-02T06:04:54Z   4ed09321   IA    RELIANCE.NS                    1     9ec7b8de78cdfb5ab1f1   0235f8dfd1162528865a   OK
+9     2026-03-02T06:05:23Z   f52b5edb   IA    RELIANCE.NS                    0     8ee9c8d3503e22871786   9ec7b8de78cdfb5ab1f1   OK
+10    2026-03-02T06:16:36Z   7af2b545   IA    RELIANCE.NS                    0     89411727429feaff5da5   8ee9c8d3503e22871786   OK
+11    2026-03-02T06:17:18Z   90245f3c   IA    RELIANCE.NS                    0     95039ac788e939848e63   89411727429feaff5da5   OK
+12    2026-03-02T06:17:48Z   165c101e   RA    INFY.NS                        0     abbe7f3c8c1fbc6783ec   95039ac788e939848e63   OK
+13    2026-03-02T06:18:15Z   a507da30   RA    INFY.NS, RELIANCE.NS, TCS.NS   0     3905b2c0f9c2ede6f393   abbe7f3c8c1fbc6783ec   OK
+14    2026-03-03T12:10:08Z   1a9c5c17   IA    INFY.NS                        0     13b91e03b9a1cff800e6   3905b2c0f9c2ede6f393   OK
+15    2026-03-03T12:11:12Z   70c0ab97   RA    INFY.NS, RELIANCE.NS, TCS.NS   0     c92e412da2c895f90a4c   13b91e03b9a1cff800e6   OK
+16    2026-03-03T12:14:35Z   c8d3206e   IA    HDFCBANK.NS, INFY.NS, REL...   0     53bb0189cc57ad53029b   c92e412da2c895f90a4c   OK
+17    2026-03-03T12:19:29Z   cb08588e   IA    HDFCBANK.NS, INFY.NS, REL...   0     a2c0a0c1eb5d4c288c97   53bb0189cc57ad53029b   OK
+18    2026-03-03T12:20:10Z   bd78b0f1   IA    INFY.NS, RELIANCE.NS, TCS.NS   4     782a90931195354d021b   a2c0a0c1eb5d4c288c97   OK
+19    2026-03-03T12:22:48Z   78982e94   IA    INFY.NS, RELIANCE.NS, TCS.NS   4     1a1c869c08015dbd1c37   782a90931195354d021b   OK
+20    2026-03-03T12:29:19Z   8e763899   IA    INFY.NS, RELIANCE.NS, TCS.NS   4     39872dcccc4cd5ab9438   1a1c869c08015dbd1c37   OK
+21    2026-03-03T12:44:30Z   f18be977   IA    RELIANCE.NS                    1     89e8c8c2a5f0839a1b0a   39872dcccc4cd5ab9438   OK
+22    2026-03-04T16:55:43Z   0f8bc3f7   IA    RELIANCE.NS                    1     915d2ef3ccbe34969a06   89e8c8c2a5f0839a1b0a   OK
+23    2026-03-04T16:57:49Z   f1cc21d2   IA    INFY.NS                        1     982a63d51cb808132955   915d2ef3ccbe34969a06   OK
+24    2026-03-04T17:01:26Z   2198832d   IA    INFY.NS                        1     c9fd30eb07b6220b3a89   982a63d51cb808132955   OK
+25    2026-03-04T17:02:33Z   f4b6e742   IA    RELIANCE.NS                    1     63844850ba57b5b9bb4e   c9fd30eb07b6220b3a89   OK
+26    2026-03-04T17:19:09Z   91dcb907   IA    RELIANCE.NS                    1     193b1c78e165df9c8757   63844850ba57b5b9bb4e   OK
+27    2026-03-07T03:02:36Z   403bad08   IA    HDFCBANK.NS, INFY.NS, REL...   0     7b7a3661eddde843e40f   193b1c78e165df9c8757   OK
+28    2026-03-08T18:18:12Z   3c5fa2e5   IA    ADANIENT.NS, HINDALCO.NS,...   0     a9cbe3d04f9b53d02758   7b7a3661eddde843e40f   OK
+29    2026-03-08T18:18:58Z   dc148576   IA    HDFCBANK.NS, INFY.NS, REL...   0     e1e7a942c8ed00798780   a9cbe3d04f9b53d02758   OK
+30    2026-03-08T18:22:24Z   c50ac49f   IA    ADANIENT.NS, HINDALCO.NS,...   5     65ee7fc70c25e5f9a000   e1e7a942c8ed00798780   OK
+31    2026-03-09T18:52:21Z   1f4d13ab   IA    INFY.NS                        1     02b4e502c52c8a52c45b   65ee7fc70c25e5f9a000   OK
+32    2026-03-09T18:58:20Z   130eae15   IA    IOC.NS                         1     4ac03701f61ce01f2899   02b4e502c52c8a52c45b   OK
+33    2026-03-09T19:12:52Z   87e48099   IA    IOC.NS                         1     c00bf0a5304d7374962a   4ac03701f61ce01f2899   OK
+34    2026-03-09T19:14:54Z   1219eb67   IA    INFY.NS                        1     6ec14445c2939bf3d068   c00bf0a5304d7374962a   OK
+35    2026-03-09T19:16:18Z   e0b1c940   IA    IOC.NS                         1     b7be478918e6e1999013   6ec14445c2939bf3d068   OK
+36    2026-03-09T19:24:21Z   faff7e1b   IA    INFY.NS                        1     7c96f1713246b3fe3824   b7be478918e6e1999013   OK
+────────────────────────────────────────────────────────────────────────────────
+
+PDF Inventory
+────────────────────────────────────────────────────────────────────────────────
+  2026-03-02T06:01:18  run=2bddbb99  reports\RELIANCE_NS_20260302.pdf
+  2026-03-02T06:04:54  run=4ed09321  reports\RELIANCE_NS_20260302.pdf
+  2026-03-03T12:20:10  run=bd78b0f1  reports\RELIANCE_NS_20260303.pdf
+  2026-03-03T12:20:10  run=bd78b0f1  reports\INFY_NS_20260303.pdf
+  2026-03-03T12:20:10  run=bd78b0f1  reports\TCS_NS_20260303.pdf
+  2026-03-03T12:20:10  run=bd78b0f1  reports\ASRE_Portfolio_20260303.pdf
+  2026-03-03T12:22:48  run=78982e94  reports\RELIANCE_NS_20260303.pdf
+  2026-03-03T12:22:48  run=78982e94  reports\INFY_NS_20260303.pdf
+  2026-03-03T12:22:48  run=78982e94  reports\TCS_NS_20260303.pdf
+  2026-03-03T12:22:48  run=78982e94  reports\ASRE_Portfolio_20260303.pdf
+  2026-03-03T12:29:19  run=8e763899  reports\RELIANCE_NS_20260303.pdf
+  2026-03-03T12:29:19  run=8e763899  reports\INFY_NS_20260303.pdf
+  2026-03-03T12:29:19  run=8e763899  reports\TCS_NS_20260303.pdf
+  2026-03-03T12:29:19  run=8e763899  reports\ASRE_Portfolio_20260303.pdf
+  2026-03-03T12:44:30  run=f18be977  reports\RELIANCE_NS_20260303.pdf
+  2026-03-04T16:55:43  run=0f8bc3f7  reports\RELIANCE_NS_20260304.pdf
+  2026-03-04T16:57:49  run=f1cc21d2  reports\INFY_NS_20260304.pdf
+  2026-03-04T17:01:26  run=2198832d  reports\INFY_NS_20260304.pdf
+  2026-03-04T17:02:33  run=f4b6e742  reports\RELIANCE_NS_20260304.pdf
+  2026-03-04T17:19:09  run=91dcb907  reports\RELIANCE_NS_20260304.pdf
+  2026-03-08T18:22:24  run=c50ac49f  reports\ADANIENT_NS_20260308.pdf
+  2026-03-08T18:22:24  run=c50ac49f  reports\IOC_NS_20260308.pdf
+  2026-03-08T18:22:24  run=c50ac49f  reports\HINDALCO_NS_20260308.pdf
+  2026-03-08T18:22:24  run=c50ac49f  reports\ZYDUSLIFE_NS_20260308.pdf
+  2026-03-08T18:22:24  run=c50ac49f  reports\ASRE_Portfolio_20260308.pdf
+  2026-03-09T18:52:21  run=1f4d13ab  reports\INFY_NS_20260310.pdf
+  2026-03-09T18:58:20  run=130eae15  reports\IOC_NS_20260310.pdf
+  2026-03-09T19:12:52  run=87e48099  reports\IOC_NS_20260310.pdf
+  2026-03-09T19:14:54  run=1219eb67  reports\INFY_NS_20260310.pdf
+  2026-03-09T19:16:18  run=e0b1c940  reports\IOC_NS_20260310.pdf
+  2026-03-09T19:24:21  run=faff7e1b  reports\INFY_NS_20260310.pdf
+
+END OF REPORT — Chain valid. All entries intact.
