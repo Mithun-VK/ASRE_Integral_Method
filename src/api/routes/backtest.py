@@ -24,7 +24,11 @@ import os
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Path
+
+# Ticker path-param validation (matches stocks.py): uppercase symbol, optional
+# .NS/.BO suffix.
+_TICKER_PATTERN = r"^[A-Z][A-Z0-9]*(\.[A-Z]{1,3})?$"
 from pydantic import BaseModel, Field
 import pandas as pd
 
@@ -616,7 +620,7 @@ def compare_strategies(request: CompareStrategiesRequest):
 
 @router.get("/quick/{ticker}")
 def quick_backtest(
-    ticker: str,
+    ticker: str = Path(..., pattern=_TICKER_PATTERN, description="Stock ticker symbol"),
     years: int = Query(3, description="Number of years to backtest"),
     capital: float = Query(10000.0, description="Initial capital")
 ):

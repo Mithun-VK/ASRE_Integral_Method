@@ -20,7 +20,11 @@ import os
 import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Any  # ✅ ADDED Any
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Path
+
+# Ticker path-param validation (matches stocks.py): uppercase symbol, optional
+# .NS/.BO suffix.
+_TICKER_PATTERN = r"^[A-Z][A-Z0-9]*(\.[A-Z]{1,3})?$"
 from pydantic import BaseModel, Field
 
 # Add project root to path
@@ -475,7 +479,7 @@ def compare_stocks(request: CompareStocksRequest):
 
 
 @router.get("/quick-explain/{ticker}")
-def quick_explain(ticker: str):
+def quick_explain(ticker: str = Path(..., pattern=_TICKER_PATTERN, description="Stock ticker symbol")):
     """
     Quick AI explanation with default settings.
     

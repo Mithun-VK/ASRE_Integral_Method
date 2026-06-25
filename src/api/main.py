@@ -17,6 +17,7 @@ Features:
 import logging
 import os
 import time
+import uuid
 from datetime import datetime
 from typing import Dict, Any
 
@@ -28,6 +29,12 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from api.config import settings
+from api.middleware.security import (
+    apply_security_headers,
+    enforce_rate_limit,
+    enforce_request_size,
+    validate_api_key,
+)
 
 
 # ============================================================================
@@ -86,13 +93,14 @@ app = FastAPI(
 # MIDDLEWARE
 # ============================================================================
 
-# CORS Middleware - Allow frontend access
+# CORS Middleware - Allow frontend access (tightened: methods/headers/creds
+# come from settings; credentials off because auth is via the X-API-Key header).
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
+    allow_methods=settings.CORS_ALLOW_METHODS,
+    allow_headers=settings.CORS_ALLOW_HEADERS,
     expose_headers=["X-Process-Time", "X-Request-ID"]
 )
 
@@ -100,98 +108,70 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
-# Request ID and timing middleware
+# Consolidated security + request-metadata middleware.
+# Order per request: assign request_id → size cap (413) → API key (401) →
+# rate limit (429) → handler → security headers + timing on the response.
 @app.middleware("http")
-async def add_request_metadata(request: Request, call_next):
-    """Add request ID and timing to all requests"""
-    
-    # Generate request ID
-    request_id = f"{int(time.time())}-{id(request)}"
-    
-    # Log incoming request
-    logger.info(f"[{request_id}] {request.method} {request.url.path}")
-    
-    # Time the request
+async def security_and_metadata(request: Request, call_next):
+    """Per-request security gate, request-id assignment, and timing."""
+    request_id = str(uuid.uuid4())
+    request.state.request_id = request_id
+    path = request.url.path
+
+    logger.info(f"[{request_id}] {request.method} {path}")
     start_time = time.time()
-    
-    # Process request
+
+    # --- pre-handler security gates (short-circuit on violation) ---
+    for gate in (enforce_request_size, validate_api_key, enforce_rate_limit):
+        blocked = gate(request)
+        if blocked is not None:
+            blocked.headers["X-Request-ID"] = request_id
+            apply_security_headers(blocked, path)
+            logger.warning(
+                f"[{request_id}] blocked {blocked.status_code} on {path}"
+            )
+            return blocked
+
+    # --- handler ---
     try:
         response = await call_next(request)
     except Exception as e:
+        # Let the global exception handler format the client response; just log.
         logger.error(f"[{request_id}] Request failed: {e}")
         raise
-    
-    # Calculate process time
+
+    # --- response decoration ---
     process_time = time.time() - start_time
-    
-    # Add headers
     response.headers["X-Process-Time"] = f"{process_time:.3f}s"
     response.headers["X-Request-ID"] = request_id
-    
-    # Log response
-    logger.info(
-        f"[{request_id}] {response.status_code} - {process_time:.3f}s"
-    )
-    
+    apply_security_headers(response, path)
+
+    logger.info(f"[{request_id}] {response.status_code} - {process_time:.3f}s")
     return response
-
-
-# Rate limiting middleware (simple in-memory)
-request_counts: Dict[str, list] = {}
-
-@app.middleware("http")
-async def rate_limit_middleware(request: Request, call_next):
-    """Simple rate limiting (100 requests per minute per IP)"""
-    
-    # Skip rate limiting for health checks
-    if request.url.path in ["/", "/health", "/docs", "/redoc", "/openapi.json"]:
-        return await call_next(request)
-    
-    client_ip = request.client.host
-    current_time = time.time()
-    
-    # Initialize or clean old requests
-    if client_ip not in request_counts:
-        request_counts[client_ip] = []
-    
-    # Remove requests older than 1 minute
-    request_counts[client_ip] = [
-        t for t in request_counts[client_ip] 
-        if current_time - t < 60
-    ]
-    
-    # Check rate limit (100 requests per minute)
-    if len(request_counts[client_ip]) >= 100:
-        logger.warning(f"Rate limit exceeded for {client_ip}")
-        return JSONResponse(
-            status_code=429,
-            content={
-                "detail": "Rate limit exceeded. Maximum 100 requests per minute.",
-                "retry_after": 60
-            }
-        )
-    
-    # Add current request
-    request_counts[client_ip].append(current_time)
-    
-    return await call_next(request)
 
 
 # ============================================================================
 # EXCEPTION HANDLERS
 # ============================================================================
 
+def _request_id(request: Request) -> str:
+    """Return the per-request UUID set by the security middleware (or a new one)."""
+    return getattr(request.state, "request_id", None) or str(uuid.uuid4())
+
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    """Handle HTTP exceptions"""
-    logger.warning(f"HTTP {exc.status_code}: {exc.detail}")
-    
+    """Handle HTTP exceptions (these already carry safe, structured detail)."""
+    rid = _request_id(request)
+    logger.warning(f"[{rid}] HTTP {exc.status_code}: {exc.detail}")
+
     return JSONResponse(
         status_code=exc.status_code,
         content={
             "detail": exc.detail,
+            "request_id": rid,
             "timestamp": datetime.now().isoformat(),
-            "path": str(request.url)
+            "path": str(request.url.path)
         }
     )
 
@@ -199,13 +179,15 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handle validation errors with detailed messages"""
-    logger.warning(f"Validation error: {exc.errors()}")
-    
+    rid = _request_id(request)
+    logger.warning(f"[{rid}] Validation error: {exc.errors()}")
+
     return JSONResponse(
         status_code=422,
         content={
             "detail": "Validation error",
             "errors": exc.errors(),
+            "request_id": rid,
             "timestamp": datetime.now().isoformat()
         }
     )
@@ -213,18 +195,21 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    """Catch-all exception handler"""
-    logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    
-    # Don't expose internal errors in production
-    detail = str(exc) if settings.DEBUG else "Internal server error"
-    
+    """Catch-all for UNHANDLED exceptions.
+
+    The full traceback is logged server-side only; the client receives a
+    generic message plus the request_id (for support correlation) and never a
+    stack trace — even in debug mode — so internals are never leaked.
+    """
+    rid = _request_id(request)
+    logger.exception(f"[{rid}] Unhandled exception on {request.url.path}: {exc}")
+
     return JSONResponse(
         status_code=500,
         content={
-            "detail": detail,
+            "error": "Internal server error",
+            "request_id": rid,
             "timestamp": datetime.now().isoformat(),
-            "path": str(request.url)
         }
     )
 

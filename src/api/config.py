@@ -72,14 +72,14 @@ class Settings:
     CORS_ORIGINS: List[str] = [origin.strip() for origin in _cors_origins_str.split(",")]
     """List of allowed CORS origins for React frontend."""
     
-    CORS_ALLOW_CREDENTIALS: bool = True
-    """Allow cookies and authentication headers in CORS requests."""
-    
-    CORS_ALLOW_METHODS: List[str] = ["*"]
-    """Allowed HTTP methods for CORS."""
-    
-    CORS_ALLOW_HEADERS: List[str] = ["*"]
-    """Allowed HTTP headers for CORS."""
+    CORS_ALLOW_CREDENTIALS: bool = False
+    """Auth is via the X-API-Key header (not cookies), so credentials are off."""
+
+    CORS_ALLOW_METHODS: List[str] = ["GET", "POST", "DELETE", "OPTIONS"]
+    """Allowed HTTP methods for CORS (only those the API actually serves)."""
+
+    CORS_ALLOW_HEADERS: List[str] = ["Content-Type", "X-API-Key"]
+    """Allowed request headers for CORS."""
     
     # ============================================================================
     # GROQ AI CONFIGURATION
@@ -182,10 +182,26 @@ class Settings:
     """Enable rate limiting for API endpoints."""
     
     RATE_LIMIT_PER_MINUTE: int = int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
-    """Maximum API requests per minute per IP."""
-    
+    """Maximum API requests per minute per IP (global)."""
+
+    HEAVY_RATE_LIMIT_PER_MINUTE: int = int(os.getenv("HEAVY_RATE_LIMIT_PER_MINUTE", "10"))
+    """Maximum requests per minute per IP for compute-heavy routes
+    (/api/stocks/{ticker}, /api/dip-analysis/{ticker}, /api/backtest/*)."""
+
     GROQ_RATE_LIMIT_PER_MINUTE: int = int(os.getenv("GROQ_RATE_LIMIT_PER_MINUTE", "10"))
     """Maximum Groq AI requests per minute (protect free tier quota)."""
+
+    # ============================================================================
+    # API SECURITY
+    # ============================================================================
+
+    ASRE_API_KEY: Optional[str] = os.getenv("ASRE_API_KEY")
+    """If set, all routes except public docs/health require this value in the
+    X-API-Key header. Unset (default) leaves the API open — set it before any
+    external exposure."""
+
+    MAX_REQUEST_BYTES: int = int(os.getenv("MAX_REQUEST_BYTES", str(1024 * 1024)))
+    """Reject requests whose Content-Length exceeds this many bytes (default 1MB)."""
     
     # ============================================================================
     # LOGGING CONFIGURATION

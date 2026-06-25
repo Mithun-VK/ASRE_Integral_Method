@@ -21,9 +21,14 @@ Version: 2.0.0
 import sys
 import os
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Path
+
+# Ticker path-param validation (matches the pattern used in stocks.py):
+# uppercase symbol, optional .NS/.BO suffix. Rejects malformed input early.
+_TICKER_PATTERN = r"^[A-Z][A-Z0-9]*(\.[A-Z]{1,3})?$"
 from pydantic import BaseModel, Field
 import pandas as pd
 import numpy as np
@@ -318,7 +323,16 @@ def get_quality_tier(score: float) -> str:
         return 'F'
 
 
-def fetch_stock_data(ticker: str, days: int = 730) -> pd.DataFrame:
+# Canonical rating window (matches ASREService's 1095-day / 3-year window).
+# Using the same window means dip analysis shares the memoized meta/HMM/WFW
+# caches that a /api/stocks/{ticker} call populates — so once a ticker has been
+# rated, its dip endpoints are warm (<15s) — and the dip ASRE score is
+# consistent with the canonical /api/stocks rating instead of drifting (the
+# old 730-day window produced a different score for the same ticker).
+_CANONICAL_WINDOW_DAYS = 1095
+
+
+def fetch_stock_data(ticker: str, days: int = _CANONICAL_WINDOW_DAYS) -> pd.DataFrame:
     """Fetch stock data with ASRE ratings"""
     try:
         # NSE tickers must carry the .NS suffix for Yahoo Finance / the cache.
@@ -402,7 +416,7 @@ def quick_scan(
 
 
 @router.get("/{ticker}", response_model=DipAnalysisResponse)
-def analyze_dip(ticker: str):
+def analyze_dip(ticker: str = Path(..., pattern=_TICKER_PATTERN, description="Stock ticker symbol")):
     """
     Analyze dip quality for a single stock.
     
@@ -494,6 +508,71 @@ def analyze_dip(ticker: str):
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
+def _scan_single_ticker(ticker, request, analyzer) -> Optional["DipOpportunity"]:
+    """Evaluate one ticker for a dip opportunity (thread-worker for the scan).
+
+    Returns a DipOpportunity if the ticker passes all filters, or None if it
+    should be skipped. Raises on hard failure (the caller catches per-ticker).
+    """
+    df = fetch_stock_data(ticker, days=_CANONICAL_WINDOW_DAYS)
+    if df.empty:
+        logger.warning(f"No data for {ticker}, skipping")
+        return None
+
+    latest = df.iloc[-1]
+    current_price = float(latest['close'])
+    sma_200 = float(latest['sma_200'])
+    asre_score = float(latest['r_final'])
+    quality_tier = get_quality_tier(asre_score)
+
+    # Apply filters
+    if asre_score < request.min_asre:
+        return None
+    if quality_tier not in request.quality_tiers:
+        return None
+
+    dip_analysis = analyzer.analyze_dip(
+        current_price, sma_200, asre_score, quality_tier
+    )
+
+    if not dip_analysis['approved_for_dip_buy']:
+        return None
+    if dip_analysis['confidence'] < request.min_confidence:
+        return None
+    if dip_analysis['distance_from_sma_pct'] < request.max_distance_from_sma:
+        return None
+
+    entry_timing_score = analyzer.calculate_entry_timing_score(
+        dip_analysis['dip_stage'],
+        quality_tier,
+        asre_score,
+        dip_analysis['distance_from_sma_pct']
+    )
+
+    if quality_tier == 'S':
+        base_alloc = 12.0
+    elif quality_tier == 'A':
+        base_alloc = 10.0
+    elif quality_tier == 'B':
+        base_alloc = 8.0
+    else:
+        base_alloc = 6.0
+
+    recommended_allocation = base_alloc * DipConfig.DIP_POSITION_MULTIPLIER
+
+    return DipOpportunity(
+        ticker=ticker,
+        asre_score=asre_score,
+        quality_tier=quality_tier,
+        distance_from_sma_pct=dip_analysis['distance_from_sma_pct'],
+        dip_stage=dip_analysis['dip_stage'],
+        confidence=dip_analysis['confidence'],
+        entry_timing_score=entry_timing_score,
+        recommended_allocation_pct=recommended_allocation,
+        reason=dip_analysis['reason']
+    )
+
+
 @router.post("/scan", response_model=DipScanResponse)
 def scan_universe_for_dips(request: DipScanRequest):
     """
@@ -518,89 +597,31 @@ def scan_universe_for_dips(request: DipScanRequest):
     """
     try:
         logger.info(f"Scanning {len(request.universe)} stocks for dip opportunities")
-        
-        opportunities = []
+
         analyzer = DipAnalyzer()
-        
-        for ticker in request.universe:
-            try:
-                # Fetch data
-                df = fetch_stock_data(ticker, days=365)
-                
-                if df.empty:
-                    logger.warning(f"No data for {ticker}, skipping")
+
+        # Each ticker's ASRE compute is independent and CPU+IO bound (numpy /
+        # sklearn / yfinance all release the GIL), so fan the universe scan out
+        # across a small thread pool instead of summing ~per-ticker latency
+        # sequentially. Per-ticker errors are caught and skipped, preserving the
+        # original behaviour (partial results rather than a whole-scan failure).
+        opportunities = []
+        max_workers = min(4, max(1, len(request.universe)))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_ticker = {
+                executor.submit(_scan_single_ticker, ticker, request, analyzer): ticker
+                for ticker in request.universe
+            }
+            for future in as_completed(future_to_ticker):
+                ticker = future_to_ticker[future]
+                try:
+                    opp = future.result()
+                    if opp is not None:
+                        opportunities.append(opp)
+                except Exception as e:
+                    logger.error(f"Error analyzing {ticker}: {e}")
                     continue
-                
-                # Get latest values
-                latest = df.iloc[-1]
-                current_price = float(latest['close'])
-                sma_200 = float(latest['sma_200'])
-                asre_score = float(latest['r_final'])
-                quality_tier = get_quality_tier(asre_score)
-                
-                # Apply filters
-                if asre_score < request.min_asre:
-                    continue
-                
-                if quality_tier not in request.quality_tiers:
-                    continue
-                
-                # Analyze dip
-                dip_analysis = analyzer.analyze_dip(
-                    current_price,
-                    sma_200,
-                    asre_score,
-                    quality_tier
-                )
-                
-                # Check if approved
-                if not dip_analysis['approved_for_dip_buy']:
-                    continue
-                
-                # Check confidence
-                if dip_analysis['confidence'] < request.min_confidence:
-                    continue
-                
-                # Check distance
-                if dip_analysis['distance_from_sma_pct'] < request.max_distance_from_sma:
-                    continue
-                
-                # Calculate metrics
-                entry_timing_score = analyzer.calculate_entry_timing_score(
-                    dip_analysis['dip_stage'],
-                    quality_tier,
-                    asre_score,
-                    dip_analysis['distance_from_sma_pct']
-                )
-                
-                # Calculate allocation
-                if quality_tier == 'S':
-                    base_alloc = 12.0
-                elif quality_tier == 'A':
-                    base_alloc = 10.0
-                elif quality_tier == 'B':
-                    base_alloc = 8.0
-                else:
-                    base_alloc = 6.0
-                
-                recommended_allocation = base_alloc * DipConfig.DIP_POSITION_MULTIPLIER
-                
-                opportunities.append(DipOpportunity(
-                    ticker=ticker,
-                    asre_score=asre_score,
-                    quality_tier=quality_tier,
-                    distance_from_sma_pct=dip_analysis['distance_from_sma_pct'],
-                    dip_stage=dip_analysis['dip_stage'],
-                    confidence=dip_analysis['confidence'],
-                    entry_timing_score=entry_timing_score,
-                    recommended_allocation_pct=recommended_allocation,
-                    reason=dip_analysis['reason']
-                ))
-                
-            except Exception as e:
-                logger.error(f"Error analyzing {ticker}: {e}")
-                continue
-        
+
         # Sort by entry timing score (best first)
         opportunities.sort(key=lambda x: x.entry_timing_score, reverse=True)
         
@@ -627,7 +648,7 @@ def scan_universe_for_dips(request: DipScanRequest):
 
 @router.get("/{ticker}/historical", response_model=HistoricalDipResponse)
 def get_historical_dips(
-    ticker: str,
+    ticker: str = Path(..., pattern=_TICKER_PATTERN, description="Stock ticker symbol"),
     lookback_days: int = Query(730, description="Days to look back for dip patterns")
 ):
     """
@@ -743,7 +764,7 @@ def get_historical_dips(
 
 
 @router.get("/{ticker}/entry-timing", response_model=EntryTimingResponse)
-def get_entry_timing(ticker: str):
+def get_entry_timing(ticker: str = Path(..., pattern=_TICKER_PATTERN, description="Stock ticker symbol")):
     """
     Optimize entry timing for dip buying.
     
