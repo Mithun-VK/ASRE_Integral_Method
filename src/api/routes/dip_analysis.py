@@ -35,6 +35,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from asre.data.fundamental_fetcher import FundamentalFetcher
 from asre.data_loader import DataLoader
 from asre.composite import compute_complete_asre
+from api.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -320,24 +321,28 @@ def get_quality_tier(score: float) -> str:
 def fetch_stock_data(ticker: str, days: int = 730) -> pd.DataFrame:
     """Fetch stock data with ASRE ratings"""
     try:
+        # NSE tickers must carry the .NS suffix for Yahoo Finance / the cache.
+        # Config stores clean names (e.g. "TCS"); append .NS if no suffix given.
+        yf_ticker = ticker if '.' in ticker else f"{ticker}.NS"
+
         end_date = datetime.now().strftime('%Y-%m-%d')
         start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
-        
+
         # Fetch fundamentals
-        fetcher = FundamentalFetcher()
-        df_fundamentals = fetcher.fetch_quarterly_fundamentals(ticker, start_date, end_date)
-        
+        fetcher = FundamentalFetcher(cache_dir=str(settings.FUNDAMENTALS_CACHE_DIR))
+        df_fundamentals, _ = fetcher.fetch_quarterly_fundamentals(yf_ticker, start_date, end_date)
+
         # Load price data
         loader = DataLoader()
         df = loader.load_stock_data(
-            ticker,
+            yf_ticker,
             start_date,
             end_date,
             quarterly_fundamentals=df_fundamentals if df_fundamentals is not None else None
         )
-        
+
         # Compute ASRE
-        df_complete = compute_complete_asre(df, medallion=True, return_all_components=True)
+        df_complete = compute_complete_asre(df, yf_ticker, medallion=True, return_all_components=True)
         df_complete['date'] = pd.to_datetime(df_complete['date'])
         df_complete = df_complete.set_index('date')
         
@@ -367,8 +372,37 @@ def calculate_stop_loss_and_target(current_price: float, distance_from_sma_pct: 
 # API ENDPOINTS
 # ============================================================================
 
+# NOTE: static single-segment routes (e.g. /quick-scan) MUST be declared before
+# the parametrized "/{ticker}" route below, otherwise FastAPI matches them as a
+# ticker (e.g. ticker="quick-scan") and the request fails.
+@router.get("/quick-scan")
+def quick_scan(
+    tickers: str = Query(..., description="Comma-separated list of tickers (e.g., NVDA,MSFT,GOOGL)")
+):
+    """
+    Quick dip scan with default filters.
+
+    **Example:** `/api/dip-analysis/quick-scan?tickers=NVDA,MSFT,GOOGL,META,AAPL`
+    """
+    try:
+        ticker_list = [t.strip().upper() for t in tickers.split(',')]
+
+        request = DipScanRequest(
+            universe=ticker_list,
+            min_asre=60.0,
+            quality_tiers=['S', 'A', 'B'],
+            max_distance_from_sma=-20.0,
+            min_confidence=50.0
+        )
+
+        return scan_universe_for_dips(request)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Quick scan failed: {str(e)}")
+
+
 @router.get("/{ticker}", response_model=DipAnalysisResponse)
-async def analyze_dip(ticker: str):
+def analyze_dip(ticker: str):
     """
     Analyze dip quality for a single stock.
     
@@ -461,7 +495,7 @@ async def analyze_dip(ticker: str):
 
 
 @router.post("/scan", response_model=DipScanResponse)
-async def scan_universe_for_dips(request: DipScanRequest):
+def scan_universe_for_dips(request: DipScanRequest):
     """
     Scan multiple stocks for dip buying opportunities.
     
@@ -592,7 +626,7 @@ async def scan_universe_for_dips(request: DipScanRequest):
 
 
 @router.get("/{ticker}/historical", response_model=HistoricalDipResponse)
-async def get_historical_dips(
+def get_historical_dips(
     ticker: str,
     lookback_days: int = Query(730, description="Days to look back for dip patterns")
 ):
@@ -709,7 +743,7 @@ async def get_historical_dips(
 
 
 @router.get("/{ticker}/entry-timing", response_model=EntryTimingResponse)
-async def get_entry_timing(ticker: str):
+def get_entry_timing(ticker: str):
     """
     Optimize entry timing for dip buying.
     
@@ -723,7 +757,7 @@ async def get_entry_timing(ticker: str):
     """
     try:
         # Get current dip analysis
-        dip_analysis = await analyze_dip(ticker)
+        dip_analysis = analyze_dip(ticker)
         
         # Determine optimal entry
         optimal_stage = "MID"  # MID stage is optimal
@@ -766,27 +800,3 @@ async def get_entry_timing(ticker: str):
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
-@router.get("/quick-scan")
-async def quick_scan(
-    tickers: str = Query(..., description="Comma-separated list of tickers (e.g., NVDA,MSFT,GOOGL)")
-):
-    """
-    Quick dip scan with default filters.
-    
-    **Example:** `/api/dip-analysis/quick-scan?tickers=NVDA,MSFT,GOOGL,META,AAPL`
-    """
-    try:
-        ticker_list = [t.strip().upper() for t in tickers.split(',')]
-        
-        request = DipScanRequest(
-            universe=ticker_list,
-            min_asre=60.0,
-            quality_tiers=['S', 'A', 'B'],
-            max_distance_from_sma=-20.0,
-            min_confidence=50.0
-        )
-        
-        return await scan_universe_for_dips(request)
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Quick scan failed: {str(e)}")

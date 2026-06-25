@@ -15,6 +15,7 @@ Features:
 """
 
 import logging
+import os
 import time
 from datetime import datetime
 from typing import Dict, Any
@@ -513,6 +514,33 @@ async def api_stats():
 # STARTUP & SHUTDOWN EVENTS
 # ============================================================================
 
+def _warmup_cache():
+    """
+    Pre-compute ASRE ratings for all supported tickers in the background so
+    user-facing requests hit the warm 24h in-memory cache instead of paying
+    the ~40s cold compute (which would otherwise risk a hosted-gateway
+    timeout). Runs serially on a daemon thread; failures are non-fatal.
+
+    Enable with ASRE_WARMUP=1 (off by default to keep dev startup fast).
+    NOTE: the rating cache is per-process — under multiple uvicorn workers
+    each worker warms independently; use a shared cache for true multi-worker.
+    """
+    try:
+        from api.services.asre_service import ASREService
+    except Exception as exc:  # pragma: no cover
+        logger.warning("warmup: ASREService unavailable (%s)", exc)
+        return
+    tickers = list(settings.SUPPORTED_STOCKS)
+    logger.info("warmup: pre-computing %d tickers in background...", len(tickers))
+    for tk in tickers:
+        try:
+            ASREService.get_stock_rating(tk, force_refresh=False)
+            logger.info("warmup: %s cached.", tk)
+        except Exception as exc:
+            logger.warning("warmup: %s failed (%s)", tk, exc)
+    logger.info("warmup: complete.")
+
+
 @app.on_event("startup")
 async def startup_event():
     """Run on application startup"""
@@ -525,6 +553,11 @@ async def startup_event():
     logger.info(f"   Health: http://{settings.API_HOST}:{settings.API_PORT}/health")
     logger.info(f"   Supported Stocks: {len(settings.SUPPORTED_STOCKS)}")
     logger.info("=" * 80)
+
+    if os.getenv("ASRE_WARMUP", "0") == "1":
+        import threading
+        threading.Thread(target=_warmup_cache, name="asre-warmup",
+                         daemon=True).start()
 
 
 @app.on_event("shutdown")

@@ -57,6 +57,32 @@ async def list_supported_stocks():
     }
 
 
+# NOTE: static single-segment routes (e.g. /health) MUST be declared before
+# the parametrized "/{ticker}" route below, otherwise FastAPI matches them as
+# a ticker and rejects them with a 422 pattern-mismatch.
+@router.get(
+    "/health",
+    summary="Service health check",
+    description="Check if stock rating service is operational"
+)
+async def health_check():
+    """
+    Health check endpoint.
+
+    **Returns:**
+    Service health status including:
+    - ASRE availability
+    - Cache status
+    - Supported stocks count
+    """
+    health = ASREService.health_check()
+    return {
+        **health,
+        "status": "healthy" if health['asre_available'] else "degraded",
+        "timestamp": __import__('datetime').datetime.now().isoformat()
+    }
+
+
 @router.get(
     "/{ticker}",
     response_model=StockRatingResponse,
@@ -68,7 +94,7 @@ async def list_supported_stocks():
         400: {"model": ErrorResponse, "description": "Invalid ticker format"}
     }
 )
-async def get_stock_rating(
+def get_stock_rating(
     ticker: str = Path(
         ...,
         description="Stock ticker symbol (e.g., NVDA, MSFT)",
@@ -186,7 +212,7 @@ async def get_stock_rating(
     summary="Compare multiple stocks",
     description="Compare and rank multiple stocks by ASRE rating"
 )
-async def compare_stocks(
+def compare_stocks(
     request: CompareStocksRequest,
     include_explanations: bool = Query(
         False,
@@ -293,7 +319,7 @@ async def compare_stocks(
     summary="Get rating history",
     description="Get historical ratings (cached data)"
 )
-async def get_rating_history(
+def get_rating_history(
     ticker: str = Path(
         ...,
         description="Stock ticker symbol",
@@ -384,7 +410,7 @@ async def get_rating_history(
     summary="Check momentum trap",
     description="Analyze if stock is in a momentum trap"
 )
-async def check_momentum_trap(
+def check_momentum_trap(
     ticker: str = Path(
         ...,
         description="Stock ticker symbol",
@@ -536,24 +562,3 @@ async def get_cache_stats():
 # HEALTH CHECK
 # ============================================================================
 
-@router.get(
-    "/health",
-    summary="Service health check",
-    description="Check if stock rating service is operational"
-)
-async def health_check():
-    """
-    Health check endpoint.
-    
-    **Returns:**
-    Service health status including:
-    - ASRE availability
-    - Cache status
-    - Supported stocks count
-    """
-    health = ASREService.health_check()
-    return {
-        **health,
-        "status": "healthy" if health['asre_available'] else "degraded",
-        "timestamp": __import__('datetime').datetime.now().isoformat()
-    }

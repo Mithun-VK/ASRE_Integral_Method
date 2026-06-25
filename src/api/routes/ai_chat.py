@@ -148,7 +148,7 @@ class CompareStocksResponse(BaseModel):
 # ============================================================================
 
 @router.post("/explain", response_model=ExplainRatingResponse)
-async def explain_stock_rating(request: ExplainRatingRequest):
+def explain_stock_rating(request: ExplainRatingRequest):
     """
     Get AI-powered explanation of ASRE rating in plain English.
     
@@ -180,7 +180,7 @@ async def explain_stock_rating(request: ExplainRatingRequest):
         # Get ASRE rating data
         if ASRE_SERVICE_AVAILABLE:
             asre_service = ASREService()
-            asre_data = await asre_service.get_stock_rating(request.ticker)
+            asre_data = asre_service.get_stock_rating(request.ticker)
         else:
             # Mock data for testing (replace with actual service call)
             asre_data = {
@@ -240,7 +240,7 @@ async def explain_stock_rating(request: ExplainRatingRequest):
 
 
 @router.post("/explain-trap", response_model=ExplainTrapResponse)
-async def explain_momentum_trap(request: ExplainTrapRequest):
+def explain_momentum_trap(request: ExplainTrapRequest):
     """
     Get AI explanation of momentum trap risk.
     
@@ -272,7 +272,7 @@ async def explain_momentum_trap(request: ExplainTrapRequest):
         # Get ASRE scores
         if ASRE_SERVICE_AVAILABLE:
             asre_service = ASREService()
-            asre_data = await asre_service.get_stock_rating(request.ticker)
+            asre_data = asre_service.get_stock_rating(request.ticker)
             fscore = asre_data.get('fscore', 0)
             tscore = asre_data.get('tscore', 0)
             mscore = asre_data.get('mscore', 0)
@@ -314,7 +314,7 @@ async def explain_momentum_trap(request: ExplainTrapRequest):
 
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat_with_ai(request: ChatRequest):
+def chat_with_ai(request: ChatRequest):
     """
     Ask AI questions about stocks and ASRE ratings.
     
@@ -373,7 +373,7 @@ async def chat_with_ai(request: ChatRequest):
 
 
 @router.post("/compare", response_model=CompareStocksResponse)
-async def compare_stocks(request: CompareStocksRequest):
+def compare_stocks(request: CompareStocksRequest):
     """
     Compare multiple stocks with AI insights.
     
@@ -406,7 +406,7 @@ async def compare_stocks(request: CompareStocksRequest):
             asre_service = ASREService()
             for ticker in request.tickers:
                 try:
-                    asre_data = await asre_service.get_stock_rating(ticker)
+                    asre_data = asre_service.get_stock_rating(ticker)
                     stock_list.append({
                         'ticker': ticker,
                         'rfinal': asre_data.get('rfinal', 0),
@@ -429,18 +429,29 @@ async def compare_stocks(request: CompareStocksRequest):
                 for ticker in request.tickers
             ]
         
+        # Need at least 2 successfully-rated stocks to compare
+        if len(stock_list) < 2:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "Comparison needs at least 2 stocks that could be rated; "
+                    f"only {len(stock_list)} of {len(request.tickers)} succeeded. "
+                    "Check the tickers are supported and data is available."
+                ),
+            )
+
         # Sort by rating
         stock_list.sort(key=lambda x: x['rfinal'], reverse=True)
-        
+
         # Get AI explainer
         explainer = get_explainer()
-        
+
         # Generate comparison
         result = explainer.explain_comparison(
             stock_list=stock_list,
             focus=request.focus
         )
-        
+
         # ✅ FIXED - Properly format top_pick
         top_pick_data = result['top_pick']
         top_pick = TopPickDetail(
@@ -464,7 +475,7 @@ async def compare_stocks(request: CompareStocksRequest):
 
 
 @router.get("/quick-explain/{ticker}")
-async def quick_explain(ticker: str):
+def quick_explain(ticker: str):
     """
     Quick AI explanation with default settings.
     
@@ -472,7 +483,7 @@ async def quick_explain(ticker: str):
     """
     try:
         request = ExplainRatingRequest(ticker=ticker, include_trap_analysis=True)
-        return await explain_stock_rating(request)
+        return explain_stock_rating(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Quick explain failed: {str(e)}")
 

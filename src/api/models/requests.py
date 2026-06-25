@@ -54,7 +54,20 @@ class CompareStocksRequest(BaseModel):
         default=False,
         description="Include detailed F/T/M scores in response"
     )
-    
+
+    sort_by: str = Field(
+        default="rating",
+        description="Sort/ranking criterion: 'rating', 'fscore', or 'momentum'"
+    )
+
+    @field_validator('sort_by')
+    @classmethod
+    def validate_sort_by(cls, v):
+        """Validate the sort criterion, defaulting unknown values to 'rating'."""
+        allowed = {"rating", "fscore", "momentum"}
+        v = (v or "rating").lower().strip()
+        return v if v in allowed else "rating"
+
     @field_validator('tickers')
     @classmethod
     def validate_tickers(cls, v):

@@ -35,6 +35,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from asre.data.fundamental_fetcher import FundamentalFetcher
 from asre.data_loader import DataLoader
 from asre.composite import compute_complete_asre
+from api.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -426,28 +427,31 @@ def fetch_all_data(ticker: str, start_date: str, end_date: str) -> pd.DataFrame:
     (From run_investing_backtest.py)
     """
     logger.info(f"Fetching data for {ticker} from {start_date} to {end_date}")
-    
+
+    # NSE tickers must carry the .NS suffix for Yahoo Finance / the cache.
+    yf_ticker = ticker if '.' in ticker else f"{ticker}.NS"
+
     # Fetch fundamentals
-    fetcher = FundamentalFetcher()
+    fetcher = FundamentalFetcher(cache_dir=str(settings.FUNDAMENTALS_CACHE_DIR))
     try:
-        df_fundamentals = fetcher.fetch_quarterly_fundamentals(ticker, start_date, end_date)
+        df_fundamentals, _ = fetcher.fetch_quarterly_fundamentals(yf_ticker, start_date, end_date)
         logger.info(f"✓ Fetched {len(df_fundamentals)} quarters")
     except Exception as e:
         logger.error(f"Error fetching fundamentals: {e}")
         df_fundamentals = None
-        
+
     # Load price data
     loader = DataLoader()
     try:
-        df = loader.load_stock_data(ticker, start_date, end_date, quarterly_fundamentals=df_fundamentals)
+        df = loader.load_stock_data(yf_ticker, start_date, end_date, quarterly_fundamentals=df_fundamentals)
         logger.info(f"✓ Loaded {len(df)} days of data")
     except Exception as e:
         logger.error(f"Error loading data: {e}")
         raise
-        
+
     # Compute ASRE ratings
     try:
-        df_complete = compute_complete_asre(df, medallion=True, return_all_components=True)
+        df_complete = compute_complete_asre(df, yf_ticker, medallion=True, return_all_components=True)
         logger.info("✓ ASRE ratings computed")
         
         df_complete['date'] = pd.to_datetime(df_complete['date'])
@@ -465,7 +469,7 @@ def fetch_all_data(ticker: str, start_date: str, end_date: str) -> pd.DataFrame:
 # ============================================================================
 
 @router.post("/run", response_model=BacktestResponse)
-async def run_backtest(request: BacktestRequest):
+def run_backtest(request: BacktestRequest):
     """
     Run investment backtest for a single stock with tiered allocation strategy.
     
@@ -538,7 +542,7 @@ async def run_backtest(request: BacktestRequest):
 
 
 @router.post("/compare")
-async def compare_strategies(request: CompareStrategiesRequest):
+def compare_strategies(request: CompareStrategiesRequest):
     """
     Compare multiple backtest strategies side-by-side.
     
@@ -611,7 +615,7 @@ async def compare_strategies(request: CompareStrategiesRequest):
 
 
 @router.get("/quick/{ticker}")
-async def quick_backtest(
+def quick_backtest(
     ticker: str,
     years: int = Query(3, description="Number of years to backtest"),
     capital: float = Query(10000.0, description="Initial capital")
@@ -632,7 +636,7 @@ async def quick_backtest(
             initial_capital=capital
         )
         
-        return await run_backtest(request)
+        return run_backtest(request)
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Quick backtest failed: {str(e)}")

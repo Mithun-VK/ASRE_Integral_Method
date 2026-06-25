@@ -37,6 +37,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from asre.data.fundamental_fetcher import FundamentalFetcher
 from asre.data_loader import DataLoader
 from asre.composite import compute_complete_asre
+from api.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -416,44 +417,58 @@ def get_quality_tier(score: float) -> str:
 # HELPER FUNCTIONS
 # ============================================================================
 
-def get_asre_score(ticker: str) -> float:
-    """Get current ASRE score for a ticker"""
+def _clean_ticker(ticker: str) -> str:
+    """ASREService stores clean names (no suffix) and appends .NS itself."""
+    return ticker.split('.')[0] if '.' in ticker else ticker
+
+
+def get_stock_snapshot(ticker: str) -> dict:
+    """
+    Fetch a ticker's ASRE rating via the shared, cached ASREService.
+
+    Using ASREService (24h in-memory cache + memoized calibration) instead of
+    recomputing the full pipeline per call makes portfolio rebalance/
+    recommendations fast on warm cache — critical because the universe scan
+    would otherwise sum a ~40-50s cold compute across every ticker (minutes
+    for an 18-stock universe, well past any hosted-gateway timeout).
+    Returns {} on failure so callers degrade gracefully.
+    """
     try:
-        end_date = datetime.now().strftime('%Y-%m-%d')
-        start_date = (datetime.now() - pd.Timedelta(days=365*3)).strftime('%Y-%m-%d')
-        
-        fetcher = FundamentalFetcher()
-        funds = fetcher.fetch_quarterly_fundamentals(ticker, start_date, end_date)
-        
-        if funds is None or funds.empty:
-            logger.warning(f"No fundamentals for {ticker}")
-            return 0.0
-        
-        loader = DataLoader()
-        df = loader.load_stock_data(ticker, start_date, end_date, quarterly_fundamentals=funds)
-        
-        df_complete = compute_complete_asre(df, medallion=True, return_all_components=True)
-        score = float(df_complete['r_final'].iloc[-1])
-        
-        return score
-        
+        from api.services.asre_service import ASREService
+        return ASREService.get_stock_rating(_clean_ticker(ticker), force_refresh=False) or {}
     except Exception as e:
-        logger.error(f"Error getting ASRE for {ticker}: {e}")
+        logger.error(f"Error getting ASRE snapshot for {ticker}: {e}")
+        return {}
+
+
+def get_asre_score(ticker: str) -> float:
+    """Get current ASRE score for a ticker (via cached ASREService)."""
+    data = get_stock_snapshot(ticker)
+    try:
+        return float(data.get('rfinal', 0.0) or 0.0)
+    except (TypeError, ValueError):
         return 0.0
 
 
 def get_current_price(ticker: str) -> float:
-    """Get current stock price"""
+    """Get current stock price (reuses the cached ASRE snapshot — no extra fetch)."""
+    data = get_stock_snapshot(ticker)
+    try:
+        price = data.get('close_price')
+        if price:
+            return float(price)
+    except (TypeError, ValueError):
+        pass
+    # Fallback: direct lightweight price fetch if snapshot lacked a price
     try:
         import yfinance as yf
-        stock = yf.Ticker(ticker)
-        hist = stock.history(period='1d')
+        yf_ticker = ticker if '.' in ticker else f"{ticker}.NS"
+        hist = yf.Ticker(yf_ticker).history(period='1d')
         if not hist.empty:
             return float(hist['Close'].iloc[-1])
-        return 0.0
     except Exception as e:
         logger.error(f"Error getting price for {ticker}: {e}")
-        return 0.0
+    return 0.0
 
 
 # ============================================================================
@@ -461,7 +476,7 @@ def get_current_price(ticker: str) -> float:
 # ============================================================================
 
 @router.post("/portfolio/create")
-async def create_portfolio(request: CreatePortfolioRequest):
+def create_portfolio(request: CreatePortfolioRequest):
     """
     Create a new investment portfolio with specified parameters.
     
@@ -529,7 +544,7 @@ async def create_portfolio(request: CreatePortfolioRequest):
 
 
 @router.get("/portfolio/{portfolio_id}", response_model=PortfolioStateResponse)
-async def get_portfolio_state(portfolio_id: str):
+def get_portfolio_state(portfolio_id: str):
     """
     Get current portfolio state including holdings, cash, and risk metrics.
     
@@ -605,7 +620,7 @@ async def get_portfolio_state(portfolio_id: str):
 
 
 @router.post("/portfolio/{portfolio_id}/rebalance", response_model=RebalanceResponse)
-async def execute_rebalance(portfolio_id: str):
+def execute_rebalance(portfolio_id: str):
     """
     Execute portfolio rebalancing based on current ASRE ratings.
     
@@ -716,7 +731,7 @@ async def execute_rebalance(portfolio_id: str):
 
 
 @router.get("/portfolio/{portfolio_id}/recommendations", response_model=PortfolioRecommendations)
-async def get_recommendations(portfolio_id: str, top_n: int = Query(5, description="Number of recommendations")):
+def get_recommendations(portfolio_id: str, top_n: int = Query(5, description="Number of recommendations")):
     """
     Get investment recommendations (buy/sell/dip opportunities).
     
@@ -729,7 +744,7 @@ async def get_recommendations(portfolio_id: str, top_n: int = Query(5, descripti
             raise HTTPException(status_code=404, detail=f"Portfolio {portfolio_id} not found")
         
         # Reuse rebalancing logic to get targets
-        rebalance_result = await execute_rebalance(portfolio_id)
+        rebalance_result = execute_rebalance(portfolio_id)
         
         # Filter recommendations
         buy_recs = [t for t in rebalance_result.allocation_targets if t.action == "BUY"][:top_n]
@@ -751,7 +766,7 @@ async def get_recommendations(portfolio_id: str, top_n: int = Query(5, descripti
 
 
 @router.get("/portfolios")
-async def list_portfolios():
+def list_portfolios():
     """
     List all portfolios.
     
@@ -791,7 +806,7 @@ async def list_portfolios():
 
 
 @router.delete("/portfolio/{portfolio_id}")
-async def delete_portfolio(portfolio_id: str):
+def delete_portfolio(portfolio_id: str):
     """
     Delete a portfolio.
     

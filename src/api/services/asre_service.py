@@ -166,7 +166,7 @@ class ASREService:
         # ----------------------------
         # STEP 1: FUNDAMENTALS
         # ----------------------------
-            fetcher = FundamentalFetcher()
+            fetcher = FundamentalFetcher(cache_dir=str(settings.FUNDAMENTALS_CACHE_DIR))
             quarterly_result = fetcher.fetch_quarterly_fundamentals(
                 yf_ticker,
                 start_date=start_date,

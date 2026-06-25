@@ -38,7 +38,7 @@ router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
         422: {"model": ErrorResponse, "description": "Validation error"}
     }
 )
-async def analyze_portfolio_endpoint(
+def analyze_portfolio_endpoint(
     request: PortfolioAnalysisRequest,
     currency: str = Query(
         "USD",
@@ -185,7 +185,7 @@ async def analyze_portfolio_endpoint(
     summary="Get portfolio optimization suggestions",
     description="Get detailed suggestions for improving portfolio allocation"
 )
-async def optimize_portfolio(
+def optimize_portfolio(
     request: PortfolioAnalysisRequest,
     target_risk: str = Query(
         "moderate",
@@ -338,7 +338,7 @@ async def optimize_portfolio(
     summary="Get detailed risk breakdown",
     description="Get detailed analysis of portfolio risk distribution"
 )
-async def get_risk_breakdown(
+def get_risk_breakdown(
     request: PortfolioAnalysisRequest
 ):
     """
@@ -428,7 +428,7 @@ async def get_risk_breakdown(
     "/health",
     summary="Portfolio service health check"
 )
-async def portfolio_health_check():
+def portfolio_health_check():
     """
     Check if portfolio analysis service is operational.
     
